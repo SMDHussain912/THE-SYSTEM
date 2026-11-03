@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import Dashboard from './Dashboard.jsx'
 
 async function getCsrfToken() {
   const response = await fetch('/api/auth/csrf', { credentials: 'same-origin' })
@@ -161,7 +162,10 @@ function App() {
         </div>
       </header>
 
-      <section className="entry-layout">
+      {account ? (
+        <Dashboard account={account} onLogout={logout} submitting={submitting} />
+      ) : (
+        <section className="entry-layout">
         <div className="intro-panel">
           <div className="intro-copy">
             <p className="kicker"><span /> YOUR NEXT CHAPTER STARTS HERE</p>
@@ -340,7 +344,8 @@ function App() {
             </>
           )}
         </section>
-      </section>
+        </section>
+      )}
 
       <footer className="page-footer">
         <span>THE SYSTEM <span className="footer-separator">/</span> YOUR PROGRESS, YOUR WAY</span>
