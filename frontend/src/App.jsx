@@ -233,6 +233,13 @@ function App() {
                 </p>
               </div>
 
+              <a className="google-signin" href="/oauth2/authorization/google">
+                <span className="google-mark" aria-hidden="true">G</span>
+                CONTINUE WITH GOOGLE
+              </a>
+
+              <div className="auth-divider"><span>OR USE EMAIL</span></div>
+
               <div className="mode-switch" aria-label="Choose sign-in or registration">
                 <button
                   type="button"
