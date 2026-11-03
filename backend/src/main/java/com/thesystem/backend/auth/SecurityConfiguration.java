@@ -72,7 +72,8 @@ public class SecurityConfiguration {
 			HttpSecurity http,
 			CookieCsrfTokenRepository csrfTokenRepository,
 			SecurityContextRepository securityContextRepository,
-			GoogleAccountOAuth2UserService googleAccountOAuth2UserService) throws Exception {
+			GoogleAccountOAuth2UserService googleAccountOAuth2UserService,
+			@Value("${app.security.google-enabled:false}") boolean googleEnabled) throws Exception {
 		http
 				.csrf(csrf -> csrf
 						.csrfTokenRepository(csrfTokenRepository)
@@ -89,12 +90,14 @@ public class SecurityConfiguration {
 								response.sendError(HttpStatus.UNAUTHORIZED.value()))
 						.accessDeniedHandler((request, response, exception) ->
 								response.sendError(HttpStatus.FORBIDDEN.value())))
-				.oauth2Login(oauth -> oauth
-						.userInfoEndpoint(userInfo -> userInfo.userService(googleAccountOAuth2UserService))
-						.defaultSuccessUrl("/", true))
 				.formLogin(AbstractHttpConfigurer::disable)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.logout(AbstractHttpConfigurer::disable);
+		if (googleEnabled) {
+			http.oauth2Login(oauth -> oauth
+					.userInfoEndpoint(userInfo -> userInfo.userService(googleAccountOAuth2UserService))
+					.defaultSuccessUrl("/", true));
+		}
 		return http.build();
 	}
 }
