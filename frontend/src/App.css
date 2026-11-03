@@ -1134,3 +1134,14 @@
   .entry-page .access-panel { padding: .55rem .75rem; }
   .entry-page .field input { min-height: 2.2rem; }
 }
+
+
+/* Hide the outer frame scrollbar on both the login and signed-in dashboard views
+   while keeping the content scrollable on smaller screens. */
+.entry-page {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.entry-page::-webkit-scrollbar {
+  display: none;
+}
