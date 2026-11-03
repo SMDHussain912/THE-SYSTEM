@@ -9,6 +9,8 @@ import java.util.Base64;
 import java.util.HexFormat;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -71,14 +73,14 @@ public class PasswordResetService {
 		if (!token.isUsableAt(now)) throw invalidToken();
 		Account account = token.getAccount();
 		if (newPassword.getBytes(StandardCharsets.UTF_8).length > 72) {
-			throw new IllegalArgumentException("Password must be 72 bytes or fewer.");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be 72 bytes or fewer.");
 		}
 		account.setPasswordHash(encoder.encode(newPassword));
 		token.markUsed(now);
 	}
 
 	private IllegalArgumentException invalidToken() {
-		return new IllegalArgumentException("This password reset link is invalid or has expired.");
+		return new ResponseStatusException(HttpStatus.BAD_REQUEST, "This password reset link is invalid or has expired.");
 	}
 
 	private static String hash(String value) {
