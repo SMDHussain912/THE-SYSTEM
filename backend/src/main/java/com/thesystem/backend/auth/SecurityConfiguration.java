@@ -36,7 +36,7 @@ public class SecurityConfiguration {
 	UserDetailsService userDetailsService(AccountRepository accounts) {
 		return email -> accounts.findByEmail(AccountService.normalizeEmail(email))
 				.map(account -> User.withUsername(account.getEmail())
-						.password(account.getPasswordHash())
+						.password(account.getPasswordHash() == null ? "" : account.getPasswordHash())
 						.roles("USER")
 						.build())
 				.orElseThrow(() -> new UsernameNotFoundException("Invalid email or password."));
