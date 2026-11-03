@@ -16,31 +16,23 @@ import jakarta.persistence.UniqueConstraint;
 		@UniqueConstraint(name = "uk_accounts_google_subject", columnNames = "google_subject")
 })
 public class Account {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
-
 	@Column(nullable = false, length = 50)
 	private String displayName;
-
 	@Column(nullable = false, length = 254)
 	private String email;
-
 	@Column(length = 100)
 	private String passwordHash;
-
 	@Column(name = "google_subject", length = 255)
 	private String googleSubject;
-
 	@Column(name = "totp_secret", length = 512)
 	private String totpSecret;
-
 	@Column(name = "totp_enabled", nullable = false)
 	private boolean totpEnabled;
 
-	protected Account() {
-	}
+	protected Account() {}
 
 	public Account(String displayName, String email, String passwordHash) {
 		this.displayName = displayName;
@@ -56,7 +48,7 @@ public class Account {
 	public String getGoogleSubject() { return googleSubject; }
 	public String getTotpSecret() { return totpSecret; }
 	public boolean isTotpEnabled() { return totpEnabled; }
-
+	public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 	public void linkGoogle(String subject) { this.googleSubject = subject; }
 	public void setTotpSecret(String secret) { this.totpSecret = secret; }
 	public void setTotpEnabled(boolean enabled) { this.totpEnabled = enabled; }

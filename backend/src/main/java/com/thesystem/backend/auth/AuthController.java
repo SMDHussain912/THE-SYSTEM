@@ -34,16 +34,19 @@ public class AuthController {
 	private final AuthenticationManager authenticationManager;
 	private final CsrfTokenRepository csrfTokenRepository;
 	private final JwtService jwtService;
+	private final PasswordResetService passwordResetService;
 	private final boolean secureCookies;
 
 	public AuthController(AccountService accountService, AccountRepository accountRepository,
 			AuthenticationManager authenticationManager, CsrfTokenRepository csrfTokenRepository,
-			JwtService jwtService, @Value("${app.security.cookie-secure:false}") boolean secureCookies) {
+			JwtService jwtService, PasswordResetService passwordResetService,
+			@Value("${app.security.cookie-secure:false}") boolean secureCookies) {
 		this.accountService = accountService;
 		this.accountRepository = accountRepository;
 		this.authenticationManager = authenticationManager;
 		this.csrfTokenRepository = csrfTokenRepository;
 		this.jwtService = jwtService;
+		this.passwordResetService = passwordResetService;
 		this.secureCookies = secureCookies;
 	}
 
@@ -66,6 +69,22 @@ public class AuthController {
 		authenticateAndIssueCookie(email, request.password(), response);
 		return accountRepository.findByEmail(email).map(AccountProfile::from)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
+	}
+
+	@PostMapping("/password/forgot")
+	public ResponseEntity<AuthResponses.MessageResponse> requestPasswordReset(
+			@Valid @RequestBody AuthRequests.PasswordResetRequest request) {
+		passwordResetService.requestReset(request.email());
+		return ResponseEntity.ok(new AuthResponses.MessageResponse(
+				"If an account with that email exists, a password reset link has been sent."));
+	}
+
+	@PostMapping("/password/reset")
+	public ResponseEntity<AuthResponses.MessageResponse> resetPassword(
+			@Valid @RequestBody AuthRequests.PasswordResetConfirmation request) {
+		passwordResetService.resetPassword(request.token(), request.newPassword());
+		return ResponseEntity.ok(new AuthResponses.MessageResponse(
+				"Your password has been updated. You can now sign in."));
 	}
 
 	@GetMapping("/me")

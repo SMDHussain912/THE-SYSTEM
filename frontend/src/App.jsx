@@ -17,14 +17,16 @@ async function readError(response) {
 }
 
 function App() {
-  const [mode, setMode] = useState('login')
+  const initialResetToken = new URLSearchParams(window.location.search).get('resetToken')
+  const [mode, setMode] = useState(initialResetToken ? 'reset' : 'login')
+  const [resetToken] = useState(initialResetToken || '')
   const [account, setAccount] = useState(null)
   const [csrf, setCsrf] = useState(null)
   const [apiReady, setApiReady] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [form, setForm] = useState({ displayName: '', email: '', password: '' })
+  const [form, setForm] = useState({ displayName: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -47,7 +49,7 @@ function App() {
           signal: controller.signal,
         })
 
-        if (profileResponse.ok) {
+        if (profileResponse.ok && !initialResetToken) {
           setAccount(await profileResponse.json())
         } else if (profileResponse.status !== 401) {
           throw new Error('Could not check your account. Please refresh the page.')
@@ -84,25 +86,32 @@ function App() {
     setSubmitting(true)
 
     try {
-      const response = await fetch(`/api/auth/${mode === 'register' ? 'register' : 'login'}`, {
+      if (mode === 'reset' && form.password !== form.confirmPassword) throw new Error('Your passwords do not match.')
+      const endpoint = mode === 'register' ? 'register' : mode === 'forgot' ? 'password/forgot' : mode === 'reset' ? 'password/reset' : 'login'
+      const payload = mode === 'register' ? form : mode === 'forgot' ? { email: form.email } : mode === 'reset' ? { token: resetToken, newPassword: form.password } : { email: form.email, password: form.password }
+      const response = await fetch(`/api/auth/${endpoint}`, {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json',
           [csrf.headerName]: csrf.token,
         },
-        body: JSON.stringify(
-          mode === 'register'
-            ? form
-            : { email: form.email, password: form.password },
-        ),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         throw new Error(await readError(response))
       }
 
-      setAccount(await response.json())
+      if (mode === 'forgot' || mode === 'reset') {
+        const result = await response.json()
+        setMode('login')
+        setForm((current) => ({ ...current, password: '', confirmPassword: '' }))
+        window.history.replaceState({}, '', '/')
+        setError(result.message)
+      } else {
+        setAccount(await response.json())
+      }
     } catch (requestError) {
       setError(
         requestError instanceof TypeError
@@ -222,25 +231,23 @@ function App() {
           ) : (
             <>
               <div className="panel-heading">
-                <p className="kicker">{mode === 'login' ? 'WELCOME BACK' : 'CREATE YOUR PROFILE'}</p>
+                <p className="kicker">{mode === 'login' ? 'WELCOME BACK' : mode === 'register' ? 'CREATE YOUR PROFILE' : mode === 'forgot' ? 'ACCOUNT RECOVERY' : 'SECURE YOUR ACCOUNT'}</p>
                 <h2 id="access-heading">
-                  {mode === 'login' ? 'Enter the system.' : 'Begin your journey.'}
+                  {mode === 'login' ? 'Enter the system.' : mode === 'register' ? 'Begin your journey.' : mode === 'forgot' ? 'Recover access.' : 'Set a new password.'}
                 </h2>
                 <p className="panel-description">
-                  {mode === 'login'
-                    ? 'Sign in to pick up where you left off.'
-                    : 'Set up your profile to get started.'}
+                  {mode === 'login' ? 'Sign in to pick up where you left off.' : mode === 'register' ? 'Set up your profile to get started.' : mode === 'forgot' ? 'Enter your email to receive a reset link if an account exists.' : 'Choose a new password for your account.'}
                 </p>
               </div>
 
-              <a className="google-signin" href="/oauth2/authorization/google">
+              {mode !== 'forgot' && mode !== 'reset' && <a className="google-signin" href="/oauth2/authorization/google">
                 <span className="google-mark" aria-hidden="true">G</span>
                 CONTINUE WITH GOOGLE
-              </a>
+              </a>}
 
-              <div className="auth-divider"><span>OR USE EMAIL</span></div>
+              {mode !== 'forgot' && mode !== 'reset' && <div className="auth-divider"><span>OR USE EMAIL</span></div>}
 
-              <div className="mode-switch" aria-label="Choose sign-in or registration">
+              {mode !== 'forgot' && mode !== 'reset' && <div className="mode-switch" aria-label="Choose sign-in or registration">
                 <button
                   type="button"
                   className={mode === 'login' ? 'is-selected' : ''}
@@ -257,7 +264,7 @@ function App() {
                 >
                   REGISTER
                 </button>
-              </div>
+              </div>}
 
               <form className="access-form" onSubmit={submitForm}>
                 {mode === 'register' && (
@@ -275,7 +282,7 @@ function App() {
                   </label>
                 )}
 
-                <label className="field">
+                {mode !== 'reset' && <label className="field">
                   <span>EMAIL ADDRESS</span>
                   <input
                     autoComplete="email"
@@ -287,18 +294,18 @@ function App() {
                     type="email"
                     value={form.email}
                   />
-                </label>
+                </label>}
 
-                <label className="field">
-                  <span>PASSWORD</span>
+                {mode !== 'forgot' && <label className="field">
+                  <span>{mode === 'reset' ? 'NEW PASSWORD' : 'PASSWORD'}</span>
                   <span className="password-input">
                     <input
-                      autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       maxLength={72}
-                      minLength={mode === 'register' ? 10 : undefined}
+                      minLength={mode === 'login' ? undefined : 10}
                       name="password"
                       onChange={updateField}
-                      placeholder={mode === 'register' ? 'At least 10 characters' : 'Enter your password'}
+                      placeholder={mode === 'login' ? 'Enter your password' : 'At least 10 characters'}
                       required
                       type={showPassword ? 'text' : 'password'}
                       value={form.password}
@@ -312,7 +319,9 @@ function App() {
                       {showPassword ? 'HIDE' : 'SHOW'}
                     </button>
                   </span>
-                </label>
+                </label>}
+                {mode === 'reset' && <label className="field"><span>CONFIRM NEW PASSWORD</span><input autoComplete="new-password" maxLength={72} minLength={10} name="confirmPassword" onChange={updateField} placeholder="Enter the new password again" required type="password" value={form.confirmPassword} /></label>}
+                {mode === 'login' && <p className="forgot-row"><button className="text-button" type="button" onClick={() => { setMode('forgot'); setError('') }}>FORGOT PASSWORD?</button></p>}
 
                 {error && <p className="form-error" role="alert">{error}</p>}
 
@@ -332,17 +341,17 @@ function App() {
                       ? 'PLEASE WAIT'
                       : mode === 'login'
                         ? 'ENTER THE SYSTEM'
-                        : 'CREATE ACCOUNT'}
+                        : mode === 'register' ? 'CREATE ACCOUNT' : mode === 'forgot' ? 'SEND RESET LINK' : 'UPDATE PASSWORD'}
                   </span>
                   <span aria-hidden="true">↗</span>
                 </button>
               </form>
 
               <p className="panel-footnote">
-                {mode === 'login' ? 'NEW HERE?' : 'ALREADY HAVE AN ACCOUNT?'}{' '}
+                {mode === 'forgot' || mode === 'reset' ? 'REMEMBERED YOUR PASSWORD?' : mode === 'login' ? 'NEW HERE?' : 'ALREADY HAVE AN ACCOUNT?'}{' '}
                 <button
                   className="text-button"
-                  onClick={() => changeMode(mode === 'login' ? 'register' : 'login')}
+                  onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); window.history.replaceState({}, '', '/') }}
                   type="button"
                 >
                   {mode === 'login' ? 'CREATE AN ACCOUNT' : 'SIGN IN'}
