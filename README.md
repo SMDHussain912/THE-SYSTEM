@@ -35,12 +35,55 @@ For HTTPS deployments, set `SESSION_COOKIE_SECURE=true` so session and CSRF
 cookies are only sent over secure connections. Flyway applies the SQL schema
 migrations in `backend/src/main/resources/db/migration` at startup.
 
+## Local environment configuration
+
+The repository uses a root `.env` file for local development configuration.
+Copy the example file and fill in your own values:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+The root `.env` file is loaded by the backend at startup and by Vite for
+frontend development. The backend loader also checks the backend working
+directory, so a `.env` file there can be used if needed. Real `.env` files
+are ignored by Git; only `.env.example` is committed.
+
+Never put secrets in variables prefixed with `VITE_`: Vite exposes those values
+to browser code. Keep database passwords, OAuth client secrets, and mail
+credentials in server-side variables only.
+
+## Google sign-in
+
+Google sign-in uses Spring Security OAuth2 Client. Set these values in the root
+`.env` file:
+
+- `APP_SECURITY_GOOGLE_ENABLED=true`
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID`
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET`
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE=openid,profile,email`
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI=http://localhost:5173/login/oauth2/code/google`
+- `APP_FRONTEND_URL=http://localhost:5173`
+
+In Google Cloud Console, configure the OAuth client as a **Web application** and
+add this authorized JavaScript origin:
+
+`http://localhost:5173`
+
+Add this authorized redirect URI:
+
+`http://localhost:5173/login/oauth2/code/google`
+
+The Vite development server proxies `/api`, `/oauth2`, and
+`/login/oauth2` to the backend. For a deployed environment, configure the
+production frontend URL and exact HTTPS redirect URI registered with Google.
+Do not expose the Google client secret to the frontend or commit it to Git.
+
 ## Run locally
 
 1. Install Node.js and Java 21 or newer.
-2. Create a PostgreSQL database named `the_system` and a user with access to it.
-   Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` as environment
-   variables.
+2. Create a PostgreSQL database named `the_system` and configure its connection
+   values in the root `.env` file.
 3. Start the backend:
 
    ```powershell
@@ -58,40 +101,6 @@ migrations in `backend/src/main/resources/db/migration` at startup.
 
 Open the Vite URL printed in the frontend terminal. The API health check is
 available at `http://localhost:8080/api/health`.
-
-## Google sign-in
-
-Google sign-in uses Spring Security OAuth2 Client. Configure the following
-environment variables on the machine that runs the backend:
-
-| Environment variable | Value |
-| --- | --- |
-| `APP_SECURITY_GOOGLE_ENABLED` | `true` |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID` | Your Google OAuth client ID |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET` | Your Google OAuth client secret |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE` | `openid,profile,email` |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI` | `http://localhost:5173/login/oauth2/code/google` |
-| `APP_FRONTEND_URL` | `http://localhost:5173` |
-
-In Google Cloud Console, configure the OAuth client as a **Web application** and
-add this authorized JavaScript origin:
-
-`http://localhost:5173`
-
-Add this authorized redirect URI:
-
-`http://localhost:5173/login/oauth2/code/google`
-
-On Windows, add these values under **Start → search “Edit the system
-environment variables” → Environment Variables → User variables**. Close and
-reopen PowerShell, Command Prompt, your IDE, or any terminal that runs the
-backend so it inherits the new environment. You do not need to put credentials
-in a command or commit them to the repository.
-
-The Vite development server proxies `/api`, `/oauth2`, and
-`/login/oauth2` to the backend. Keep the Google client secret private. For a
-deployed environment, set the same variables to the production client ID,
-secret, frontend URL, and exact HTTPS redirect URI registered with Google.
 
 ## Verify
 
