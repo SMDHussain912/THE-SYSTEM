@@ -39,6 +39,29 @@ public class AccountService {
 		return accountRepository.save(account);
 	}
 
+	@Transactional
+	public Account resolveGoogleAccount(String subject, String email, String displayName) {
+		String normalizedEmail = normalizeEmail(email);
+		Account bySubject = accountRepository.findByGoogleSubject(subject).orElse(null);
+		if (bySubject != null) return bySubject;
+
+		Account account = accountRepository.findByEmail(normalizedEmail).orElse(null);
+		if (account != null) {
+			if (account.getGoogleSubject() != null && !account.getGoogleSubject().equals(subject)) {
+				throw new IllegalArgumentException("This email is already linked to another Google account.");
+			}
+			account.linkGoogle(subject);
+			return accountRepository.save(account);
+		}
+
+		Account created = new Account(
+				displayName == null || displayName.isBlank() ? normalizedEmail : displayName.trim(),
+				normalizedEmail,
+				null);
+		created.linkGoogle(subject);
+		return accountRepository.save(created);
+	}
+
 	public static String normalizeEmail(String email) {
 		return email.trim().toLowerCase(Locale.ROOT);
 	}
