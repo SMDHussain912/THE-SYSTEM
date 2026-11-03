@@ -942,14 +942,17 @@
 .text-button { color: #83d0ff; }
 .panel-footnote { color: #89a4bc; }
 @media (max-height: 760px) and (min-width: 48.01rem) {
-  .entry-page { min-height: 620px; height: auto; }
-  .entry-layout { padding-top: 1rem; padding-bottom: 1rem; }
-  .intro-copy h1 { margin: 1rem 0 .85rem; font-size: clamp(3rem, 6vw, 5rem); }
-  .portal-art { width: min(42vw, 29rem); }
-  .access-panel { padding-top: 1rem; padding-bottom: 1.1rem; }
-  .panel-heading { padding: 1.3rem 0 1rem; }
-  .access-form { gap: .8rem; padding-top: 1rem; }
-  .field input { min-height: 2.75rem; }
+  .entry-layout { padding-top: .75rem; padding-bottom: .75rem; gap: 1.5rem; }
+  .intro-copy h1 { margin: .8rem 0 .65rem; font-size: clamp(2.7rem, 5.5vw, 4.5rem); }
+  .intro-text { font-size: .86rem; line-height: 1.55; }
+  .portal-art { width: min(38vw, 25rem); }
+  .access-panel { padding-top: .8rem; padding-bottom: .85rem; }
+  .panel-heading { padding: 1rem 0 .8rem; }
+  .access-form { gap: .65rem; padding-top: .8rem; }
+  .field input { min-height: 2.5rem; }
+  .google-signin { min-height: 2.6rem; margin-top: .8rem; }
+  .auth-divider { margin-top: .7rem; }
+  .panel-footnote { margin-top: .8rem; }
 }
 @media (max-width: 48rem) {
   .entry-page {
@@ -1001,6 +1004,49 @@
 }
 @media (max-width: 27rem) {
   .entry-page.is-authenticated {
+    padding-bottom: 12px;
+  }
+}
+
+
+/* Keep both entry and signed-in views inside the inset viewport frame.
+   If a short screen cannot show every control at once, scroll inside the frame
+   instead of letting the frame extend beyond the viewport or clipping content. */
+.entry-page {
+  height: calc(100svh - 56px);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.entry-layout {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+@media (max-width: 48rem) {
+  .entry-layout {
+    flex: 0 0 auto;
+    padding: clamp(.85rem, 2.5svh, 1.5rem) 0;
+    gap: clamp(1rem, 2.5svh, 1.5rem);
+  }
+  .intro-copy h1 {
+    font-size: clamp(2.7rem, 10vw, 4rem);
+  }
+}
+@media (max-width: 27rem) {
+  .entry-page {
+    height: calc(100svh - 24px);
+    min-height: 0;
+  }
+}
+.entry-page.is-authenticated {
+  height: calc(100svh - 56px);
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 28px;
+}
+@media (max-width: 27rem) {
+  .entry-page.is-authenticated {
+    height: calc(100svh - 24px);
     padding-bottom: 12px;
   }
 }
