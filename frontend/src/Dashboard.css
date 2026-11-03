@@ -111,3 +111,23 @@
     padding: .5rem .5rem;
   }
 }
+
+
+/* The dashboard content must shrink into the frame's remaining height. */
+.dashboard-topbar {
+  flex: 0 0 auto;
+}
+.system-workspace {
+  min-height: 0;
+  flex: 1 1 0;
+}
+.system-home {
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: .5rem 1.25rem;
+}
+@media (max-width: 48rem) {
+  .system-home {
+    padding: .5rem;
+  }
+}
