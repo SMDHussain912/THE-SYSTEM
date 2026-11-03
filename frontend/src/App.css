@@ -973,3 +973,23 @@
     border-radius: 14px;
   }
 }
+
+
+/* Google identity provider entry */
+.google-signin {
+  display: flex; min-height: 3.1rem; align-items: center; justify-content: center;
+  gap: .75rem; margin-top: 1.25rem; border: 1px solid rgba(112,176,225,.36);
+  border-radius: 6px; background: rgba(4,13,23,.72); color: #eaf5ff;
+  font-size: .65rem; font-weight: 750; letter-spacing: .11em; text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.google-signin:hover { border-color: rgba(133,207,255,.8); background: rgba(18,49,76,.72); transform: translateY(-1px); }
+.google-mark {
+  display: grid; width: 1.35rem; height: 1.35rem; place-items: center; border-radius: 50%;
+  background: #f5f8fc; color: #4285f4; font-size: .9rem; font-weight: 850; letter-spacing: 0;
+}
+.auth-divider {
+  display: flex; align-items: center; gap: .8rem; margin: 1rem 0 .15rem;
+  color: #7892a9; font-size: .54rem; font-weight: 700; letter-spacing: .16em;
+}
+.auth-divider::before, .auth-divider::after { height: 1px; flex: 1; background: rgba(85,157,210,.18); content: ""; }
