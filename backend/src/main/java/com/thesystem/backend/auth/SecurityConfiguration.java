@@ -9,6 +9,8 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -69,7 +71,8 @@ public class SecurityConfiguration {
 	SecurityFilterChain securityFilterChain(
 			HttpSecurity http,
 			CookieCsrfTokenRepository csrfTokenRepository,
-			SecurityContextRepository securityContextRepository) throws Exception {
+			SecurityContextRepository securityContextRepository,
+			GoogleAccountOAuth2UserService googleAccountOAuth2UserService) throws Exception {
 		http
 				.csrf(csrf -> csrf
 						.csrfTokenRepository(csrfTokenRepository)
@@ -77,7 +80,7 @@ public class SecurityConfiguration {
 				.securityContext(securityContext -> securityContext
 						.securityContextRepository(securityContextRepository))
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/register", "/api/auth/login")
+						.requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/register", "/api/auth/login", "/oauth2/**", "/login/oauth2/**")
 						.permitAll()
 						.requestMatchers("/api/auth/**").authenticated()
 						.anyRequest().denyAll())
@@ -86,6 +89,9 @@ public class SecurityConfiguration {
 								response.sendError(HttpStatus.UNAUTHORIZED.value()))
 						.accessDeniedHandler((request, response, exception) ->
 								response.sendError(HttpStatus.FORBIDDEN.value())))
+				.oauth2Login(oauth -> oauth
+						.userInfoEndpoint(userInfo -> userInfo.userService(googleAccountOAuth2UserService))
+						.defaultSuccessUrl("/", true))
 				.formLogin(AbstractHttpConfigurer::disable)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.logout(AbstractHttpConfigurer::disable);
