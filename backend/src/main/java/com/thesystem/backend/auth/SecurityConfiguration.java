@@ -73,7 +73,8 @@ public class SecurityConfiguration {
 			CookieCsrfTokenRepository csrfTokenRepository,
 			SecurityContextRepository securityContextRepository,
 			GoogleAccountOAuth2UserService googleAccountOAuth2UserService,
-			@Value("${app.security.google-enabled:false}") boolean googleEnabled) throws Exception {
+			@Value("${app.security.google-enabled:false}") boolean googleEnabled,
+			@Value("${app.frontend.url:http://localhost:5173}") String frontendUrl) throws Exception {
 		http
 				.csrf(csrf -> csrf
 						.csrfTokenRepository(csrfTokenRepository)
@@ -96,7 +97,8 @@ public class SecurityConfiguration {
 		if (googleEnabled) {
 			http.oauth2Login(oauth -> oauth
 					.userInfoEndpoint(userInfo -> userInfo.userService(googleAccountOAuth2UserService))
-					.defaultSuccessUrl("/", true));
+					.defaultSuccessUrl(frontendUrl, true)
+					.failureUrl(frontendUrl + "/?authError=google")));
 		}
 		return http.build();
 	}
