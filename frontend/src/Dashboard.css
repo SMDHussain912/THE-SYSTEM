@@ -103,11 +103,11 @@
 }
 .system-home {
   min-height: 0;
-  padding: 1.4rem 1.25rem;
+  padding: 1rem 1.25rem;
 }
 @media (max-width: 48rem) {
   .system-home {
     min-height: 0;
-    padding: 1.4rem .5rem;
+    padding: 1rem .5rem;
   }
 }
