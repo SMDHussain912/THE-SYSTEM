@@ -828,3 +828,148 @@
 @media (max-width: 27rem) {
   .entry-page { width: calc(100% - 24px); min-height: calc(100vh - 24px); margin: 12px auto; border-radius: 14px; }
 }
+
+
+/* Login / entry screen — full-height system interface */
+.entry-page {
+  min-height: calc(100svh - 56px);
+  height: calc(100svh - 56px);
+  overflow: hidden;
+  border-radius: 18px;
+}
+.entry-layout {
+  width: min(100%, 88rem);
+  min-height: 0;
+  padding: clamp(1.25rem, 3.5vh, 2.5rem) 0;
+  gap: clamp(2rem, 6vw, 6rem);
+}
+.intro-panel {
+  min-height: 0;
+  height: 100%;
+  justify-content: center;
+  gap: 2rem;
+}
+.intro-copy { padding-top: 0; }
+.intro-copy h1 {
+  font-weight: 560;
+  letter-spacing: -.07em;
+}
+.intro-copy h1 span {
+  color: #8bd4ff;
+  text-shadow: 0 0 2.2rem rgba(55,169,255,.22);
+}
+.intro-text { color: #9bb4cb; }
+.intro-footer {
+  color: #7292ad;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-size: .62rem;
+}
+.portal-art {
+  right: -1.5rem;
+  width: min(48vw, 34rem);
+  border-color: rgba(85,189,255,.16);
+  opacity: .68;
+}
+.portal-ring--outer {
+  border-color: rgba(85,189,255,.32);
+  box-shadow: 0 0 0 1.2rem rgba(38,133,203,.035), 0 0 3.5rem rgba(32,135,216,.16), inset 0 0 3rem rgba(40,139,216,.1);
+}
+.portal-ring--inner {
+  border-color: rgba(133,211,255,.42);
+}
+.portal-core {
+  width: 15%;
+  background: rgba(31,126,197,.2);
+  box-shadow: 0 0 1.4rem rgba(85,189,255,.42), 0 0 5rem rgba(36,142,220,.42), inset 0 0 1.5rem rgba(85,189,255,.24);
+}
+.access-panel {
+  align-self: center;
+  border-radius: 12px;
+  padding: 1.35rem clamp(1.4rem, 2.7vw, 2.1rem) 1.6rem;
+  border-color: rgba(85,189,255,.34);
+  background:
+    linear-gradient(145deg, rgba(12,29,48,.97), rgba(6,16,29,.985));
+  box-shadow: 0 1.5rem 4rem rgba(0,0,0,.34), 0 0 2.5rem rgba(28,132,210,.08), inset 0 1px rgba(205,237,255,.07);
+}
+.access-panel::before,
+.access-panel::after {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-color: #55bdff;
+}
+.panel-topline {
+  border-bottom-color: rgba(85,189,255,.17);
+  color: #83a9c7;
+}
+.panel-heading h2,
+.signed-in h2 {
+  color: #edf8ff;
+  letter-spacing: -.04em;
+}
+.mode-switch {
+  border-radius: 7px;
+  border-color: rgba(85,189,255,.2);
+  background: rgba(2,9,17,.62);
+}
+.mode-switch button { border-radius: 5px; }
+.mode-switch button.is-selected {
+  background: linear-gradient(110deg, rgba(22,120,201,.22), rgba(39,158,234,.12));
+  color: #9bdcff;
+}
+.field input {
+  min-height: 3.15rem;
+  border-radius: 6px;
+  border-color: rgba(88,154,207,.3);
+  background: rgba(2,9,17,.68);
+}
+.field input:focus {
+  border-color: #55bdff;
+  box-shadow: 0 0 0 3px rgba(85,189,255,.12), 0 0 1rem rgba(35,144,220,.08);
+}
+.submit-button {
+  min-height: 3.35rem;
+  border: 1px solid rgba(157,220,255,.75);
+  border-radius: 6px;
+  background: linear-gradient(110deg, #1476bd, #2399e2);
+  box-shadow: 0 .5rem 1.7rem rgba(24,128,207,.22), inset 0 1px rgba(255,255,255,.18);
+  letter-spacing: .16em;
+}
+.submit-button:hover:not(:disabled) {
+  filter: brightness(1.12);
+  box-shadow: 0 .5rem 2rem rgba(40,153,232,.34);
+}
+.text-button { color: #83d0ff; }
+.panel-footnote { color: #89a4bc; }
+@media (max-height: 760px) and (min-width: 48.01rem) {
+  .entry-page { min-height: 620px; height: auto; }
+  .entry-layout { padding-top: 1rem; padding-bottom: 1rem; }
+  .intro-copy h1 { margin: 1rem 0 .85rem; font-size: clamp(3rem, 6vw, 5rem); }
+  .portal-art { width: min(42vw, 29rem); }
+  .access-panel { padding-top: 1rem; padding-bottom: 1.1rem; }
+  .panel-heading { padding: 1.3rem 0 1rem; }
+  .access-form { gap: .8rem; padding-top: 1rem; }
+  .field input { min-height: 2.75rem; }
+}
+@media (max-width: 48rem) {
+  .entry-page {
+    height: auto;
+    min-height: calc(100svh - 56px);
+    overflow: hidden;
+  }
+  .entry-layout {
+    min-height: 0;
+    padding: 2.4rem 0;
+    gap: 2rem;
+  }
+  .intro-panel { height: auto; }
+  .portal-art { right: -8rem; }
+  .access-panel { border-radius: 10px; }
+}
+@media (max-width: 27rem) {
+  .entry-page {
+    min-height: calc(100svh - 24px);
+    height: auto;
+    border-radius: 14px;
+  }
+}
