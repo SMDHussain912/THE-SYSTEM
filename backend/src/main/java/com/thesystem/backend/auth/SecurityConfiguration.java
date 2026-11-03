@@ -98,7 +98,7 @@ public class SecurityConfiguration {
 			http.oauth2Login(oauth -> oauth
 					.userInfoEndpoint(userInfo -> userInfo.userService(googleAccountOAuth2UserService))
 					.defaultSuccessUrl(frontendUrl, true)
-					.failureUrl(frontendUrl + "/?authError=google")));
+					.failureUrl(frontendUrl + "/?authError=google"));
 		}
 		return http.build();
 	}
