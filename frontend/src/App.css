@@ -1157,3 +1157,54 @@
 .forgot-row .text-button {
   font-size: inherit;
 }
+
+/* Natural scrolling inside the framed app: keep the frame fixed to the viewport,
+   but never clip content when the page is taller than the available space. */
+.entry-page {
+  height: calc(100svh - 56px);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-y: contain;
+}
+.entry-page::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+.entry-page .entry-layout {
+  flex: 0 0 auto;
+  min-height: min-content;
+}
+.entry-page .page-footer {
+  flex: 0 0 auto;
+}
+.entry-page:not(.is-authenticated) .intro-panel {
+  min-height: min(38rem, calc(100svh - 17rem));
+}
+@media (max-width: 48rem) {
+  .entry-page {
+    height: calc(100svh - 56px);
+    overflow-y: auto;
+  }
+  .entry-page .entry-layout {
+    flex: 0 0 auto;
+    grid-template-rows: auto auto;
+    align-content: start;
+    padding: clamp(1.25rem, 3.5svh, 2.4rem) 0;
+    gap: clamp(1.25rem, 3svh, 2rem);
+  }
+  .entry-page .intro-panel {
+    height: auto;
+    min-height: 0;
+  }
+}
+@media (max-width: 27rem) {
+  .entry-page,
+  .entry-page.is-authenticated {
+    height: calc(100svh - 24px);
+    overflow-y: auto;
+  }
+}
