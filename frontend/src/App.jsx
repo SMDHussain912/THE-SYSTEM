@@ -108,7 +108,7 @@ function App() {
         setMode('login')
         setForm((current) => ({ ...current, password: '', confirmPassword: '' }))
         window.history.replaceState({}, '', '/')
-        window.alert(result.message)
+        setError(result.message)
       } else {
         setAccount(await response.json())
       }
