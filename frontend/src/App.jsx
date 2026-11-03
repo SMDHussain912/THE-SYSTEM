@@ -145,7 +145,7 @@ function App() {
   }
 
   return (
-    <main className="entry-page">
+    <main className={`entry-page${account ? ' is-authenticated' : ''}`}>
       <div className="ambient ambient--one" aria-hidden="true" />
       <div className="ambient ambient--two" aria-hidden="true" />
 
