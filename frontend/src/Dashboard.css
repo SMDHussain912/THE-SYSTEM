@@ -1,42 +1,82 @@
-.system-workspace {
-  width: min(100%, 88rem); flex: 1; margin: 0 auto; display: flex;
-  flex-direction: column; min-height: min(68vh, 48rem);
-  animation: workspace-enter 420ms ease both;
+.dashboard-topbar {
+  min-height: 5.4rem;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 0;
 }
+.dashboard-topbar .brand { flex: 0 0 auto; }
 .system-navigation {
-  display: flex; align-items: stretch; gap: clamp(1.25rem, 3.2vw, 3.25rem);
-  min-height: 3.8rem; border-bottom: 1px solid var(--line);
-  overflow-x: auto; scrollbar-width: none;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: clamp(1.1rem, 2.5vw, 2.5rem);
+  min-height: 3.5rem;
+  margin-left: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .system-navigation::-webkit-scrollbar { display: none; }
 .system-nav-link, .system-signout {
-  position: relative; display: inline-flex; align-items: center; justify-content: center;
-  flex: 0 0 auto; padding: .1rem 0 0; border: 0; background: transparent;
-  color: var(--muted); cursor: pointer; font-size: .78rem; font-weight: 600;
-  letter-spacing: .025em; transition: color 160ms ease;
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: .1rem 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: .025em;
+  transition: color 160ms ease;
 }
 .system-nav-link:hover, .system-nav-link.is-active { color: var(--accent-bright); }
 .system-nav-link.is-active::after {
-  position: absolute; right: 0; bottom: -1px; left: 0; height: 2px;
-  background: var(--accent-bright); box-shadow: 0 0 .9rem rgba(55,169,255,.7); content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent-bright);
+  box-shadow: 0 0 .9rem rgba(55,169,255,.7);
+  content: "";
 }
 .system-signout {
-  margin-left: auto; color: #8ca9c5; font-size: .68rem;
-  text-transform: uppercase; letter-spacing: .1em;
+  margin-left: .5rem;
+  color: #8ca9c5;
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
 }
 .system-signout:hover { color: var(--text); }
 .system-signout:disabled { cursor: wait; opacity: .55; }
-.system-home {
-  display: grid; flex: 1; align-content: center; justify-items: center;
-  min-height: 25rem; padding: 4rem 1.25rem 6rem; text-align: center;
+.system-workspace {
+  width: min(100%, 88rem);
+  flex: 1;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: min(68vh, 48rem);
+  animation: workspace-enter 420ms ease both;
 }
-.system-eyebrow {
-  margin: 0 0 1.15rem; color: var(--accent-bright); font-size: .62rem;
-  font-weight: 700; letter-spacing: .22em;
+.system-home {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  justify-items: center;
+  min-height: 25rem;
+  padding: 4rem 1.25rem 6rem;
+  text-align: center;
 }
 .system-home h1 {
-  margin: 0; color: #eaf6ff; font-size: clamp(2.3rem, 6vw, 4.8rem);
-  font-weight: 520; letter-spacing: -.065em; line-height: 1.08;
+  margin: 0;
+  color: #eaf6ff;
+  font-size: clamp(2.3rem, 6vw, 4.8rem);
+  font-weight: 520;
+  letter-spacing: -.065em;
+  line-height: 1.08;
   text-shadow: 0 0 2.8rem rgba(46,153,255,.2);
 }
 .system-placeholder { margin: 1rem 0 0; color: var(--muted); font-size: .9rem; }
@@ -44,10 +84,11 @@
   from { opacity: 0; transform: translateY(7px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@media (max-width: 38rem) {
-  .system-navigation { gap: 1.45rem; min-height: 3.5rem; }
-  .system-nav-link { font-size: .72rem; }
-  .system-signout { font-size: .58rem; }
+@media (max-width: 48rem) {
+  .dashboard-topbar { align-items: flex-start; flex-direction: column; gap: .8rem; padding: 1.4rem 0 0; }
+  .system-navigation { width: 100%; justify-content: flex-start; gap: 1.4rem; min-height: 3.25rem; }
+  .system-nav-link { font-size: .7rem; }
+  .system-signout { margin-left: auto; font-size: .58rem; }
   .system-home { min-height: 20rem; padding: 3rem .5rem 4rem; }
 }
 @media (prefers-reduced-motion: reduce) {
