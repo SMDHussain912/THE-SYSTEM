@@ -1050,3 +1050,87 @@
     padding-bottom: 12px;
   }
 }
+
+
+/* Keep the public home/login content fitted inside the frame without scrolling. */
+.entry-page {
+  overflow: hidden;
+  height: calc(100svh - 56px);
+  min-height: 0;
+}
+.entry-page .entry-layout {
+  flex: 1 1 0;
+  min-height: 0;
+  padding-top: clamp(.5rem, 2.2svh, 1.5rem);
+  padding-bottom: clamp(.5rem, 2.2svh, 1.5rem);
+}
+.entry-page:not(.is-authenticated) .intro-panel {
+  min-height: 0;
+}
+@media (max-height: 760px) and (min-width: 48.01rem) {
+  .entry-page .topbar { min-height: 3.8rem; }
+  .entry-page .page-footer { min-height: 2.8rem; }
+  .entry-page .entry-layout { gap: 1.25rem; }
+  .entry-page .panel-topline { padding-bottom: .65rem; }
+  .entry-page .panel-heading { padding: .8rem 0 .65rem; }
+  .entry-page .access-panel { padding-top: .75rem; padding-bottom: .8rem; }
+  .entry-page .field { gap: .35rem; }
+}
+@media (max-width: 48rem) {
+  .entry-page {
+    height: calc(100svh - 56px);
+    min-height: 0;
+  }
+  .entry-page .topbar { min-height: 3.5rem; }
+  .entry-page .page-footer { min-height: 2.7rem; }
+  .entry-page .entry-layout {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: center;
+    gap: clamp(.45rem, 1.2svh, .8rem);
+    padding: .5rem 0;
+  }
+  .entry-page .intro-panel {
+    min-height: 0;
+    height: auto;
+  }
+  .entry-page .intro-copy h1 {
+    margin: .45rem 0;
+    font-size: clamp(2rem, 7.5vw, 3rem);
+    line-height: .95;
+  }
+  .entry-page .intro-text {
+    font-size: .76rem;
+    line-height: 1.4;
+  }
+  .entry-page .portal-art { display: none; }
+  .entry-page .access-panel {
+    align-self: center;
+    padding: .7rem clamp(.85rem, 4vw, 1.25rem);
+  }
+  .entry-page .panel-topline { padding-bottom: .45rem; }
+  .entry-page .panel-heading { padding: .55rem 0 .5rem; }
+  .entry-page .panel-heading h2 { margin: .35rem 0 .25rem; font-size: 1.35rem; }
+  .entry-page .panel-description { font-size: .72rem; line-height: 1.35; }
+  .entry-page .access-form { gap: .55rem; padding-top: .65rem; }
+  .entry-page .field { gap: .3rem; }
+  .entry-page .field input { min-height: 2.45rem; }
+  .entry-page .google-signin { min-height: 2.4rem; margin-top: .65rem; }
+  .entry-page .auth-divider { margin-top: .5rem; }
+  .entry-page .panel-footnote { margin-top: .55rem; }
+}
+@media (max-width: 27rem) {
+  .entry-page {
+    height: calc(100svh - 24px);
+    min-height: 0;
+  }
+  .entry-page .topbar { min-height: 3rem; }
+  .entry-page .page-footer { min-height: 2.3rem; }
+  .entry-page .entry-layout { gap: .4rem; padding: .4rem 0; }
+  .entry-page .intro-copy h1 { font-size: clamp(1.8rem, 8vw, 2.4rem); }
+  .entry-page .intro-text { font-size: .7rem; }
+  .entry-page .access-panel { padding: .55rem .75rem; }
+  .entry-page .field input { min-height: 2.2rem; }
+}
