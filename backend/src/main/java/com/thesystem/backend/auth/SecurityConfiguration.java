@@ -82,7 +82,7 @@ public class SecurityConfiguration {
 			.logout(AbstractHttpConfigurer::disable);
 		if (googleEnabled) {
 			http.oauth2Login(oauth -> oauth
-					.userInfoEndpoint(userInfo -> userInfo.userService(new GoogleAccountOAuth2UserServiceProxy()))
+					.userInfoEndpoint(userInfo -> userInfo.userService(googleAccountOAuth2UserService))
 					.successHandler(oauth2SuccessHandler)
 					.failureUrl(frontendUrl + "/?authError=google"));
 		}
