@@ -79,7 +79,7 @@ public class PasswordResetService {
 		token.markUsed(now);
 	}
 
-	private IllegalArgumentException invalidToken() {
+	private ResponseStatusException invalidToken() {
 		return new ResponseStatusException(HttpStatus.BAD_REQUEST, "This password reset link is invalid or has expired.");
 	}
 
