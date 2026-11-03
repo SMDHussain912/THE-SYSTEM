@@ -1,15 +1,12 @@
 package com.thesystem.backend.auth;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,32 +21,30 @@ import com.thesystem.backend.account.AccountRepository;
 import com.thesystem.backend.auth.AuthResponses.AccountProfile;
 import com.thesystem.backend.auth.AuthResponses.CsrfTokenResponse;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
 	private final AccountService accountService;
 	private final AccountRepository accountRepository;
 	private final AuthenticationManager authenticationManager;
-	private final SecurityContextRepository securityContextRepository;
 	private final CsrfTokenRepository csrfTokenRepository;
+	private final JwtService jwtService;
+	private final boolean secureCookies;
 
-	public AuthController(
-			AccountService accountService,
-			AccountRepository accountRepository,
-			AuthenticationManager authenticationManager,
-			SecurityContextRepository securityContextRepository,
-			CsrfTokenRepository csrfTokenRepository) {
+	public AuthController(AccountService accountService, AccountRepository accountRepository,
+			AuthenticationManager authenticationManager, CsrfTokenRepository csrfTokenRepository,
+			JwtService jwtService, @Value("${app.security.cookie-secure:false}") boolean secureCookies) {
 		this.accountService = accountService;
 		this.accountRepository = accountRepository;
 		this.authenticationManager = authenticationManager;
-		this.securityContextRepository = securityContextRepository;
 		this.csrfTokenRepository = csrfTokenRepository;
+		this.jwtService = jwtService;
+		this.secureCookies = secureCookies;
 	}
 
 	@GetMapping("/csrf")
@@ -58,70 +53,58 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity<AccountProfile> register(
-			@Valid @RequestBody AuthRequests.Register request,
-			HttpServletRequest servletRequest,
-			HttpServletResponse servletResponse) {
+	public ResponseEntity<AccountProfile> register(@Valid @RequestBody AuthRequests.Register request,
+			HttpServletResponse response) {
 		Account account = accountService.register(request);
-		Authentication authentication = authenticate(account.getEmail(), request.password());
-		saveAuthentication(authentication, servletRequest, servletResponse);
+		authenticateAndIssueCookie(account.getEmail(), request.password(), response);
 		return ResponseEntity.status(HttpStatus.CREATED).body(AccountProfile.from(account));
 	}
 
 	@PostMapping("/login")
-	public AccountProfile login(
-			@Valid @RequestBody AuthRequests.Login request,
-			HttpServletRequest servletRequest,
-			HttpServletResponse servletResponse) {
-		Authentication authentication = authenticate(
-				AccountService.normalizeEmail(request.email()),
-				request.password());
-		saveAuthentication(authentication, servletRequest, servletResponse);
-		return profileFor(authentication);
+	public AccountProfile login(@Valid @RequestBody AuthRequests.Login request, HttpServletResponse response) {
+		String email = AccountService.normalizeEmail(request.email());
+		authenticateAndIssueCookie(email, request.password(), response);
+		return accountRepository.findByEmail(email).map(AccountProfile::from)
+				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
 	}
 
 	@GetMapping("/me")
 	public AccountProfile me(Authentication authentication) {
-		return profileFor(authentication);
+		if (!(authentication.getPrincipal() instanceof Jwt jwt)) {
+			throw new IllegalStateException("Unexpected authentication principal.");
+		}
+		Account account = accountRepository.findByEmail(jwt.getSubject())
+				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
+		return AccountProfile.from(account);
 	}
 
 	@PostMapping("/logout")
 	public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+		clearCookie(response, JwtService.ACCESS_COOKIE);
 		csrfTokenRepository.saveToken(null, request, response);
-		SecurityContextHolder.clearContext();
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
 		return ResponseEntity.noContent().build();
 	}
 
-	private Authentication authenticate(String email, String password) {
-		return authenticationManager.authenticate(
-				UsernamePasswordAuthenticationToken.unauthenticated(email, password));
-	}
-
-	private void saveAuthentication(
-			Authentication authentication,
-			HttpServletRequest request,
-			HttpServletResponse response) {
-		if (request.getSession(false) != null) {
-			request.changeSessionId();
-		}
-
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(authentication);
-		SecurityContextHolder.setContext(context);
-		securityContextRepository.saveContext(context, request, response);
-	}
-
-	private AccountProfile profileFor(Authentication authentication) {
-		Object principal = authentication.getPrincipal();
-		String email = principal instanceof UserDetails userDetails
-				? userDetails.getUsername()
-				: (String) ((OAuth2User) principal).getAttributes().get("email");
+	private void authenticateAndIssueCookie(String email, String password, HttpServletResponse response) {
+		authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(email, password));
 		Account account = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
-		return new AccountProfile(account.getId(), account.getDisplayName(), account.getEmail());
+		Cookie cookie = new Cookie(JwtService.ACCESS_COOKIE, jwtService.createAccessToken(account));
+		cookie.setHttpOnly(true);
+		cookie.setSecure(secureCookies);
+		cookie.setPath("/");
+		cookie.setMaxAge((int) jwtService.getExpirationSeconds());
+		cookie.setAttribute("SameSite", "Lax");
+		response.addCookie(cookie);
+	}
+
+	private void clearCookie(HttpServletResponse response, String name) {
+		Cookie cookie = new Cookie(name, "");
+		cookie.setHttpOnly(true);
+		cookie.setSecure(secureCookies);
+		cookie.setPath("/");
+		cookie.setMaxAge(0);
+		cookie.setAttribute("SameSite", "Lax");
+		response.addCookie(cookie);
 	}
 }
