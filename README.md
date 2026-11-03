@@ -39,8 +39,9 @@ migrations in `backend/src/main/resources/db/migration` at startup.
 
 1. Install Node.js and Java 21 or newer.
 2. Create a PostgreSQL database named `the_system` and a user with access to it.
-   Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` for that database.
-3. In a terminal, start the backend:
+   Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` as environment
+   variables.
+3. Start the backend:
 
    ```powershell
    cd backend
@@ -58,46 +59,39 @@ migrations in `backend/src/main/resources/db/migration` at startup.
 Open the Vite URL printed in the frontend terminal. The API health check is
 available at `http://localhost:8080/api/health`.
 
+## Google sign-in
 
-## Google sign-in (local development)
+Google sign-in uses Spring Security OAuth2 Client. Configure the following
+environment variables on the machine that runs the backend:
 
-Google sign-in is implemented with Spring Security OAuth2 Client. It is disabled
-by default, so the application can still start without Google credentials.
+| Environment variable | Value |
+| --- | --- |
+| `APP_SECURITY_GOOGLE_ENABLED` | `true` |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID` | Your Google OAuth client ID |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET` | Your Google OAuth client secret |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE` | `openid,profile,email` |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI` | `http://localhost:5173/login/oauth2/code/google` |
+| `APP_FRONTEND_URL` | `http://localhost:5173` |
 
-1. In the [Google Cloud Console](https://console.cloud.google.com/), create or
-   select a project and configure the OAuth consent screen.
-2. Create an OAuth client ID with application type **Web application**.
-3. Add this authorized JavaScript origin:
+In Google Cloud Console, configure the OAuth client as a **Web application** and
+add this authorized JavaScript origin:
 
-   `http://localhost:5173`
+`http://localhost:5173`
 
-4. Add this authorized redirect URI:
+Add this authorized redirect URI:
 
-   `http://localhost:5173/login/oauth2/code/google`
+`http://localhost:5173/login/oauth2/code/google`
 
-5. Keep the generated client secret private. In PowerShell, set the credentials
-   in the same terminal where you start the backend:
-
-   ```powershell
-   $env:GOOGLE_CLIENT_ID = "your-client-id"
-   $env:GOOGLE_CLIENT_SECRET = "your-client-secret"
-   ```
-
-6. Start the backend with the Google OAuth profile:
-
-   ```powershell
-   cd backend
-   .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=google-oauth"
-   ```
-
-7. Start the frontend separately with `npm run dev` and open
-   `http://localhost:5173`.
+On Windows, add these values under **Start → search “Edit the system
+environment variables” → Environment Variables → User variables**. Close and
+reopen PowerShell, Command Prompt, your IDE, or any terminal that runs the
+backend so it inherits the new environment. You do not need to put credentials
+in a command or commit them to the repository.
 
 The Vite development server proxies `/api`, `/oauth2`, and
-`/login/oauth2` to the backend. For a deployed environment, register the exact
-HTTPS redirect URI used by that deployment and set `GOOGLE_REDIRECT_URI`,
-`FRONTEND_URL`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` accordingly.
-Never commit OAuth client secrets to the repository.
+`/login/oauth2` to the backend. Keep the Google client secret private. For a
+deployed environment, set the same variables to the production client ID,
+secret, frontend URL, and exact HTTPS redirect URI registered with Google.
 
 ## Verify
 
