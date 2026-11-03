@@ -15,7 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;\nimport org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;\nimport org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -65,7 +66,8 @@ public class SecurityConfiguration {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.securityContext(context -> context.requireExplicitSave(true))
 			.authorizeHttpRequests(authorize -> authorize
-					.requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/register", "/api/auth/login",\n\t\t\t\t\t\t\t"/api/auth/password/forgot", "/api/auth/password/reset",
+					.requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/register", "/api/auth/login",
+							"/api/auth/password/forgot", "/api/auth/password/reset",
 							"/oauth2/**", "/login/oauth2/**").permitAll()
 					.requestMatchers("/api/auth/**").authenticated()
 					.anyRequest().denyAll())
