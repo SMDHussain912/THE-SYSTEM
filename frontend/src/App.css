@@ -758,3 +758,55 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Framed electric-blue system window */
+.entry-page {
+  width: calc(100% - 28px); min-height: calc(100vh - 28px); margin: 14px auto;
+  padding: 0 clamp(1rem, 2.6vw, 2.5rem);
+  border: 1px solid rgba(64,164,239,.58);
+  background: linear-gradient(145deg, rgba(8,19,33,.96), rgba(5,11,20,.98));
+  box-shadow: 0 0 2.5rem rgba(22,119,203,.09), inset 0 0 2.5rem rgba(28,113,183,.035);
+}
+.entry-page::before {
+  opacity: .18;
+  background-image: linear-gradient(rgba(83,158,216,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(83,158,216,.08) 1px, transparent 1px);
+}
+.entry-page::after {
+  background: radial-gradient(ellipse at 50% 35%, rgba(17,102,176,.13), transparent 48%), linear-gradient(180deg, rgba(4,11,20,.04), transparent 55%, rgba(4,11,20,.38));
+}
+.ambient, .ambient::before, .ambient::after { border-color: rgba(66,159,229,.07); }
+.topbar { min-height: 5rem; border-bottom-color: rgba(75,158,222,.27); }
+.brand-mark, .brand-mark::before { border-color: var(--accent-bright); }
+.brand-mark span { background: var(--accent-bright); box-shadow: 0 0 .75rem var(--accent-bright); }
+.connection-dot.is-online { background: var(--mint); box-shadow: 0 0 .7rem rgba(99,230,220,.65); }
+.kicker, .kicker > span { color: var(--accent-bright); }
+.kicker > span { background: var(--accent-bright); box-shadow: 0 0 .75rem rgba(85,189,255,.8); }
+.intro-copy h1 span { color: var(--accent-bright); text-shadow: 0 0 2.8rem rgba(55,159,239,.25); }
+.portal-art { border-color: rgba(65,157,224,.12); }
+.portal-grid { background-image: linear-gradient(rgba(95,172,226,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(95,172,226,.08) 1px, transparent 1px); }
+.portal-ring { border-color: rgba(85,189,255,.25); }
+.portal-ring--outer { box-shadow: 0 0 0 1.4rem rgba(38,133,203,.035), 0 0 4rem rgba(32,135,216,.13), inset 0 0 3rem rgba(40,139,216,.08); }
+.portal-ring--inner { border-color: rgba(85,189,255,.32); box-shadow: 0 0 2.4rem rgba(34,133,218,.15), inset 0 0 2rem rgba(34,133,218,.1); }
+.portal-ring--outer::before, .portal-ring--outer::after, .portal-ring--inner::before, .portal-ring--inner::after { background: var(--accent-bright); box-shadow: 0 0 .8rem var(--accent-bright); }
+.portal-core { border-color: rgba(153,218,255,.7); background: rgba(31,126,197,.14); box-shadow: 0 0 1.2rem rgba(85,189,255,.34), 0 0 4.5rem rgba(36,142,220,.35), inset 0 0 1.5rem rgba(85,189,255,.2); }
+.portal-core span { border-color: #d7f0ff; background: rgba(135,209,255,.42); }
+.access-panel { border-color: rgba(78,157,219,.25); background: linear-gradient(145deg, rgba(12,25,41,.96), rgba(8,16,28,.98)); box-shadow: 0 1.5rem 5rem rgba(0,0,0,.3), inset 0 1px rgba(224,243,255,.035); }
+.panel-topline { color: #7fa2bf; }
+.mode-switch { border-color: rgba(76,153,214,.2); background: rgba(3,10,18,.55); }
+.mode-switch button.is-selected { background: rgba(38,142,232,.16); color: var(--accent-bright); box-shadow: inset 0 0 0 1px rgba(85,189,255,.2); }
+.field > span:first-child { color: #9bb1c7; }
+.field input { border-color: rgba(88,154,207,.24); background: rgba(3,10,18,.65); color: var(--text); }
+.field input:focus { border-color: var(--accent-bright); box-shadow: 0 0 0 3px rgba(85,189,255,.1); }
+.submit-button { background: linear-gradient(110deg, #1678c9, #279eea); color: #f5fbff; box-shadow: 0 .5rem 1.8rem rgba(24,128,207,.2); }
+.submit-button:hover:not(:disabled) { box-shadow: 0 .4rem 2rem rgba(40,153,232,.34); }
+.text-button { color: #75caff; }
+.text-button:hover, .password-toggle:hover { color: #e5f6ff; }
+.success-emblem { border-color: rgba(99,230,220,.58); box-shadow: 0 0 1.8rem rgba(56,199,202,.12); }
+.success-emblem span { border-color: var(--mint); background: rgba(99,230,220,.32); box-shadow: 0 0 1rem rgba(99,230,220,.55); }
+.signed-in .kicker { color: var(--mint); }
+.page-footer { border-top-color: rgba(75,158,222,.2); }
+.footer-separator { color: var(--accent); }
+@media (max-width: 27rem) {
+  .entry-page { width: calc(100% - 16px); min-height: calc(100vh - 16px); margin: 8px auto; padding: 0 .85rem; }
+}
