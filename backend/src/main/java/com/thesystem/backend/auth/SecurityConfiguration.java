@@ -15,8 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;\nimport org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;\nimport org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;\nimport org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;\nimport org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -57,6 +56,7 @@ public class SecurityConfiguration {
 			CookieCsrfTokenRepository csrfTokenRepository,
 			BearerTokenResolver jwtCookieBearerTokenResolver,
 			JwtOAuth2SuccessHandler oauth2SuccessHandler,
+			GoogleAccountOAuth2UserService googleAccountOAuth2UserService,
 			@Value("${app.security.google-enabled:false}") boolean googleEnabled,
 			@Value("${app.frontend.url:http://localhost:5173}") String frontendUrl) throws Exception {
 		http
