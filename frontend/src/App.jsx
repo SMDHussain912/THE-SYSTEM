@@ -49,7 +49,7 @@ function App() {
           signal: controller.signal,
         })
 
-        if (profileResponse.ok) {
+        if (profileResponse.ok && !initialResetToken) {
           setAccount(await profileResponse.json())
         } else if (profileResponse.status !== 401) {
           throw new Error('Could not check your account. Please refresh the page.')
