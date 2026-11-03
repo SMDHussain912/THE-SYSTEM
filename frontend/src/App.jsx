@@ -149,7 +149,7 @@ function App() {
       <div className="ambient ambient--one" aria-hidden="true" />
       <div className="ambient ambient--two" aria-hidden="true" />
 
-      <header className="topbar">
+      {!account && <header className="topbar">
         <a className="brand" href="/" aria-label="The System home">
           <span className="brand-mark" aria-hidden="true">
             <span />
@@ -160,7 +160,7 @@ function App() {
           <span className={`connection-dot${apiReady ? ' is-online' : ''}`} />
           {loading ? 'CONNECTING' : apiReady ? 'SYSTEM ONLINE' : 'SYSTEM OFFLINE'}
         </div>
-      </header>
+      </header>}
 
       {account ? (
         <Dashboard account={account} onLogout={logout} submitting={submitting} />
@@ -347,10 +347,10 @@ function App() {
         </section>
       )}
 
-      <footer className="page-footer">
+      {!account && <footer className="page-footer">
         <span>THE SYSTEM <span className="footer-separator">/</span> YOUR PROGRESS, YOUR WAY</span>
         <span>TAKE THE FIRST STEP</span>
-      </footer>
+      </footer>}
     </main>
   )
 }
