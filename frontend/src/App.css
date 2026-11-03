@@ -993,3 +993,14 @@
   color: #7892a9; font-size: .54rem; font-weight: 700; letter-spacing: .16em;
 }
 .auth-divider::before, .auth-divider::after { height: 1px; flex: 1; background: rgba(85,157,210,.18); content: ""; }
+
+
+/* Match the signed-in dashboard's bottom inset to the frame's outer spacing. */
+.entry-page.is-authenticated {
+  padding-bottom: 28px;
+}
+@media (max-width: 27rem) {
+  .entry-page.is-authenticated {
+    padding-bottom: 12px;
+  }
+}
