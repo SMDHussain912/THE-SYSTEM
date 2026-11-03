@@ -8,39 +8,43 @@ function Dashboard({ account, onLogout, submitting }) {
   const displayName = account?.displayName?.trim()
 
   return (
-    <main className="system-workspace">
-      <nav className="system-navigation" aria-label="Main navigation">
-        {navigation.map((item) => (
-          <button
-            className={activePage === item ? 'system-nav-link is-active' : 'system-nav-link'}
-            key={item}
-            type="button"
-            aria-current={activePage === item ? 'page' : undefined}
-            onClick={() => setActivePage(item)}
-          >
-            {item}
+    <>
+      <header className="topbar dashboard-topbar">
+        <a className="brand" href="/" aria-label="The System home">
+          <span className="brand-mark" aria-hidden="true"><span /></span>
+          <span>THE SYSTEM</span>
+        </a>
+        <nav className="system-navigation" aria-label="Main navigation">
+          {navigation.map((item) => (
+            <button
+              className={activePage === item ? 'system-nav-link is-active' : 'system-nav-link'}
+              key={item}
+              type="button"
+              aria-current={activePage === item ? 'page' : undefined}
+              onClick={() => setActivePage(item)}
+            >
+              {item}
+            </button>
+          ))}
+          <button className="system-signout" type="button" onClick={onLogout} disabled={submitting}>
+            {submitting ? 'Signing out…' : 'Sign out'}
           </button>
-        ))}
-        <button className="system-signout" type="button" onClick={onLogout} disabled={submitting}>
-          {submitting ? 'Signing out…' : 'Sign out'}
-        </button>
-      </nav>
+        </nav>
+      </header>
 
-      <section className="system-home" aria-live="polite">
-        {activePage === 'Home' ? (
-          <>
-            <p className="system-eyebrow">PERSONAL SYSTEM // ONLINE</p>
+      <main className="system-workspace">
+        <section className="system-home" aria-live="polite">
+          {activePage === 'Home' ? (
             <h1>{'Welcome back' + (displayName ? ', ' + displayName : '') + '.'}</h1>
-          </>
-        ) : (
-          <>
-            <p className="system-eyebrow">{'WORKSPACE // ' + activePage.toUpperCase()}</p>
-            <h1>{activePage}</h1>
-            <p className="system-placeholder">This section is being prepared.</p>
-          </>
-        )}
-      </section>
-    </main>
+          ) : (
+            <>
+              <h1>{activePage}</h1>
+              <p className="system-placeholder">This section is being prepared.</p>
+            </>
+          )}
+        </section>
+      </main>
+    </>
   )
 }
 
