@@ -810,3 +810,21 @@
 @media (max-width: 27rem) {
   .entry-page { width: calc(100% - 16px); min-height: calc(100vh - 16px); margin: 8px auto; padding: 0 .85rem; }
 }
+
+/* Rounded, inset application frame and uncluttered signed-in header */
+.entry-page {
+  width: calc(100% - 56px);
+  min-height: calc(100vh - 56px);
+  margin: 28px auto;
+  padding: 0 clamp(1.25rem, 3vw, 3rem);
+  border: 1px solid rgba(64,164,239,.58);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(8,19,33,.96), rgba(5,11,20,.98));
+  box-shadow: 0 0 2.5rem rgba(22,119,203,.09), inset 0 0 2.5rem rgba(28,113,183,.035);
+}
+.topbar { border-bottom: 0; }
+.page-footer { border-top: 0; }
+.dashboard-topbar { border-bottom: 0 !important; }
+@media (max-width: 27rem) {
+  .entry-page { width: calc(100% - 24px); min-height: calc(100vh - 24px); margin: 12px auto; border-radius: 14px; }
+}
