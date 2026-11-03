@@ -95,3 +95,19 @@
   .system-workspace { animation: none; }
   .system-nav-link { transition: none; }
 }
+
+/* Keep the signed-in workspace within the available framed viewport. */
+.system-workspace {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.system-home {
+  min-height: 0;
+  padding: 2rem 1.25rem;
+}
+@media (max-width: 48rem) {
+  .system-home {
+    min-height: 0;
+    padding: 2rem .5rem;
+  }
+}
