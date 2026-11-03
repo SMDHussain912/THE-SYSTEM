@@ -282,7 +282,7 @@ function App() {
                   </label>
                 )}
 
-                <label className="field">
+                {mode !== 'reset' && <label className="field">
                   <span>EMAIL ADDRESS</span>
                   <input
                     autoComplete="email"
@@ -294,18 +294,18 @@ function App() {
                     type="email"
                     value={form.email}
                   />
-                </label>
+                </label>}
 
                 {mode !== 'forgot' && <label className="field">
                   <span>{mode === 'reset' ? 'NEW PASSWORD' : 'PASSWORD'}</span>
                   <span className="password-input">
                     <input
-                      autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       maxLength={72}
-                      minLength={mode === 'register' ? 10 : undefined}
+                      minLength={mode === 'login' ? undefined : 10}
                       name="password"
                       onChange={updateField}
-                      placeholder={mode === 'register' ? 'At least 10 characters' : 'Enter your password'}
+                      placeholder={mode === 'login' ? 'Enter your password' : 'At least 10 characters'}
                       required
                       type={showPassword ? 'text' : 'password'}
                       value={form.password}
