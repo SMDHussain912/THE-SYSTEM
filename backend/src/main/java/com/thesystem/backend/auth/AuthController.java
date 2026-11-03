@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -115,7 +116,10 @@ public class AuthController {
 	}
 
 	private AccountProfile profileFor(Authentication authentication) {
-		String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+		Object principal = authentication.getPrincipal();
+		String email = principal instanceof UserDetails userDetails
+				? userDetails.getUsername()
+				: (String) ((OAuth2User) principal).getAttributes().get("email");
 		Account account = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
 		return new AccountProfile(account.getId(), account.getDisplayName(), account.getEmail());
