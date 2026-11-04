@@ -1,6 +1,9 @@
 package com.thesystem.backend.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +32,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 	private final AccountService accountService;
 	private final AccountRepository accountRepository;
 	private final AuthenticationManager authenticationManager;
@@ -36,12 +40,15 @@ public class AuthController {
 	private final JwtService jwtService;
 	private final PasswordResetService passwordResetService;
 	private final EmailVerificationService emailVerificationService;
+	private final EmailOtpLoginService emailOtpLoginService;
+	private final EmailOtpLoginRequestDispatcher emailOtpLoginRequestDispatcher;
 	private final boolean secureCookies;
 
 	public AuthController(AccountService accountService, AccountRepository accountRepository,
 			AuthenticationManager authenticationManager, CsrfTokenRepository csrfTokenRepository,
 			JwtService jwtService, PasswordResetService passwordResetService,
-			EmailVerificationService emailVerificationService,
+			EmailVerificationService emailVerificationService, EmailOtpLoginService emailOtpLoginService,
+			EmailOtpLoginRequestDispatcher emailOtpLoginRequestDispatcher,
 			@Value("${app.security.cookie-secure:false}") boolean secureCookies) {
 		this.accountService = accountService;
 		this.accountRepository = accountRepository;
@@ -50,6 +57,8 @@ public class AuthController {
 		this.jwtService = jwtService;
 		this.passwordResetService = passwordResetService;
 		this.emailVerificationService = emailVerificationService;
+		this.emailOtpLoginService = emailOtpLoginService;
+		this.emailOtpLoginRequestDispatcher = emailOtpLoginRequestDispatcher;
 		this.secureCookies = secureCookies;
 	}
 
@@ -89,6 +98,26 @@ public class AuthController {
 		Account signedIn = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
 		return AccountProfile.from(signedIn);
+	}
+
+	@PostMapping("/email/otp/request")
+	public ResponseEntity<AuthResponses.MessageResponse> requestEmailOtp(
+			@Valid @RequestBody AuthRequests.EmailOtpRequest request) {
+		try {
+			emailOtpLoginRequestDispatcher.requestCode(request.email());
+		} catch (TaskRejectedException exception) {
+			// Keep queue saturation indistinguishable from other non-delivery cases.
+			LOGGER.warn("Email sign-in request queue is full.");
+		}
+		return ResponseEntity.accepted().body(new AuthResponses.MessageResponse(EmailOtpLoginService.requestMessage()));
+	}
+
+	@PostMapping("/email/otp/verify")
+	public AccountProfile verifyEmailOtp(@Valid @RequestBody AuthRequests.EmailOtpVerification request,
+			HttpServletResponse response) {
+		Account account = emailOtpLoginService.verify(request.email(), request.code());
+		issueAuthenticationCookie(account, response);
+		return AccountProfile.from(account);
 	}
 
 	@PostMapping("/password/forgot")
@@ -134,6 +163,10 @@ public class AuthController {
 			throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN,
 					"Please verify your email address before signing in.");
 		}
+		issueAuthenticationCookie(account, response);
+	}
+
+	private void issueAuthenticationCookie(Account account, HttpServletResponse response) {
 		Cookie cookie = new Cookie(JwtService.ACCESS_COOKIE, jwtService.createAccessToken(account));
 		cookie.setHttpOnly(true);
 		cookie.setSecure(secureCookies);

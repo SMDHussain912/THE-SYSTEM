@@ -522,6 +522,7 @@
 }
 
 .form-error,
+.form-status,
 .form-note {
   margin: 0;
   font-size: 0.76rem;
@@ -530,6 +531,10 @@
 
 .form-error {
   color: #ff9aab;
+}
+
+.form-status {
+  color: var(--mint);
 }
 
 .form-note {

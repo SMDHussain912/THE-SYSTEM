@@ -22,6 +22,8 @@ function App() {
   const [resetToken] = useState(initialResetToken || '')
   const [pendingEmail, setPendingEmail] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [resendSeconds, setResendSeconds] = useState(0)
   const [account, setAccount] = useState(null)
   const [csrf, setCsrf] = useState(null)
   const [apiReady, setApiReady] = useState(false)
@@ -30,6 +32,13 @@ function App() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ displayName: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return undefined
+    const timer = window.setTimeout(() => setResendSeconds((seconds) => seconds - 1), 1000)
+    return () => window.clearTimeout(timer)
+  }, [resendSeconds])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -71,7 +80,7 @@ function App() {
 
     initialize()
     return () => controller.abort()
-  }, [])
+  }, [initialResetToken])
 
   function updateField(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
@@ -80,17 +89,19 @@ function App() {
   function changeMode(nextMode) {
     setMode(nextMode)
     setError('')
+    setNotice('')
   }
 
   async function submitForm(event) {
     event.preventDefault()
     setError('')
+    setNotice('')
     setSubmitting(true)
 
     try {
       if (mode === 'reset' && form.password !== form.confirmPassword) throw new Error('Your passwords do not match.')
-      const endpoint = mode === 'register' ? 'register' : mode === 'verify' ? 'email/verify' : mode === 'forgot' ? 'password/forgot' : mode === 'reset' ? 'password/reset' : 'login'
-      const payload = mode === 'register' ? form : mode === 'verify' ? { email: pendingEmail, code: verificationCode } : mode === 'forgot' ? { email: form.email } : mode === 'reset' ? { token: resetToken, newPassword: form.password } : { email: form.email, password: form.password }
+      const endpoint = mode === 'register' ? 'register' : mode === 'verify' ? 'email/verify' : mode === 'otp-request' ? 'email/otp/request' : mode === 'otp-verify' ? 'email/otp/verify' : mode === 'forgot' ? 'password/forgot' : mode === 'reset' ? 'password/reset' : 'login'
+      const payload = mode === 'register' ? form : mode === 'verify' ? { email: pendingEmail, code: verificationCode } : mode === 'otp-request' ? { email: form.email } : mode === 'otp-verify' ? { email: pendingEmail, code: otpCode } : mode === 'forgot' ? { email: form.email } : mode === 'reset' ? { token: resetToken, newPassword: form.password } : { email: form.email, password: form.password }
       const response = await fetch(`/api/auth/${endpoint}`, {
         method: 'POST',
         credentials: 'same-origin',
@@ -110,13 +121,22 @@ function App() {
         setVerificationCode('')
         setMode('verify')
         setForm((current) => ({ ...current, password: '', confirmPassword: '' }))
-        setError('A verification code has been sent to your email address.')
+        setNotice('A verification code has been sent to your email address.')
+      } else if (mode === 'otp-request') {
+        setPendingEmail(form.email.trim().toLowerCase())
+        setOtpCode('')
+        setMode('otp-verify')
+        setResendSeconds(60)
+        const result = await response.json()
+        setNotice(result.message)
+      } else if (mode === 'otp-verify') {
+        setAccount(await response.json())
       } else if (mode === 'forgot' || mode === 'reset') {
         const result = await response.json()
         setMode('login')
         setForm((current) => ({ ...current, password: '', confirmPassword: '' }))
         window.history.replaceState({}, '', '/')
-        setError(result.message)
+        setNotice(result.message)
       } else {
         setAccount(await response.json())
       }
@@ -129,6 +149,40 @@ function App() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  async function resendEmailOtp() {
+    setError('')
+    setNotice('')
+    setSubmitting(true)
+
+    try {
+      const response = await fetch('/api/auth/email/otp/request', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token },
+        body: JSON.stringify({ email: pendingEmail }),
+      })
+      if (!response.ok) throw new Error(await readError(response))
+      const result = await response.json()
+      setNotice(result.message)
+      setResendSeconds(60)
+    } catch (requestError) {
+      setError(
+        requestError instanceof TypeError
+          ? 'The system could not be reached. Check your connection and try again.'
+          : requestError.message || 'Could not request another code.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function returnToPasswordLogin() {
+    setMode('login')
+    setForm((current) => ({ ...current, email: pendingEmail || current.email }))
+    setError('')
+    setNotice('')
   }
 
   async function logout() {
@@ -239,23 +293,23 @@ function App() {
           ) : (
             <>
               <div className="panel-heading">
-                <p className="kicker">{mode === 'login' ? 'WELCOME BACK' : mode === 'register' ? 'CREATE YOUR PROFILE' : mode === 'verify' ? 'VERIFY YOUR EMAIL' : mode === 'forgot' ? 'ACCOUNT RECOVERY' : 'SECURE YOUR ACCOUNT'}</p>
+                <p className="kicker">{mode === 'login' ? 'WELCOME BACK' : mode === 'register' ? 'CREATE YOUR PROFILE' : mode === 'verify' ? 'VERIFY YOUR EMAIL' : mode === 'otp-request' || mode === 'otp-verify' ? 'EMAIL SIGN-IN' : mode === 'forgot' ? 'ACCOUNT RECOVERY' : 'SECURE YOUR ACCOUNT'}</p>
                 <h2 id="access-heading">
-                  {mode === 'login' ? 'Enter the system.' : mode === 'register' ? 'Begin your journey.' : mode === 'verify' ? 'Check your inbox.' : mode === 'forgot' ? 'Recover access.' : 'Set a new password.'}
+                  {mode === 'login' ? 'Enter the system.' : mode === 'register' ? 'Begin your journey.' : mode === 'verify' || mode === 'otp-verify' ? 'Check your inbox.' : mode === 'otp-request' ? 'Sign in with email.' : mode === 'forgot' ? 'Recover access.' : 'Set a new password.'}
                 </h2>
                 <p className="panel-description">
-                  {mode === 'login' ? 'Sign in to pick up where you left off.' : mode === 'register' ? 'Set up your profile to get started.' : mode === 'verify' ? `Enter the 6-digit code sent to ${pendingEmail}.` : mode === 'forgot' ? 'Enter your email to receive a reset link if an account exists.' : 'Choose a new password for your account.'}
+                  {mode === 'login' ? 'Sign in to pick up where you left off.' : mode === 'register' ? 'Set up your profile to get started.' : mode === 'verify' ? `Enter the 6-digit code sent to ${pendingEmail}.` : mode === 'otp-request' ? 'We’ll email you a one-time sign-in code.' : mode === 'otp-verify' ? `Enter the 6-digit sign-in code for ${pendingEmail}.` : mode === 'forgot' ? 'Enter your email to receive a reset link if an account exists.' : 'Choose a new password for your account.'}
                 </p>
               </div>
 
-              {mode !== 'forgot' && mode !== 'reset' && mode !== 'verify' && <a className="google-signin" href="/oauth2/authorization/google">
+              {(mode === 'login' || mode === 'register') && <a className="google-signin" href="/oauth2/authorization/google">
                 <span className="google-mark" aria-hidden="true">G</span>
                 CONTINUE WITH GOOGLE
               </a>}
 
-              {mode !== 'forgot' && mode !== 'reset' && mode !== 'verify' && <div className="auth-divider"><span>OR USE EMAIL</span></div>}
+              {(mode === 'login' || mode === 'register') && <div className="auth-divider"><span>OR USE EMAIL</span></div>}
 
-              {mode !== 'forgot' && mode !== 'reset' && mode !== 'verify' && <div className="mode-switch" aria-label="Choose sign-in or registration">
+              {(mode === 'login' || mode === 'register') && <div className="mode-switch" aria-label="Choose sign-in or registration">
                 <button
                   type="button"
                   className={mode === 'login' ? 'is-selected' : ''}
@@ -295,7 +349,12 @@ function App() {
                   <input autoComplete="one-time-code" inputMode="numeric" maxLength={6} minLength={6} name="verificationCode" onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" required value={verificationCode} />
                 </label>}
 
-                {mode !== 'reset' && mode !== 'verify' && <label className="field">
+                {mode === 'otp-verify' && <label className="field">
+                  <span>6-DIGIT SIGN-IN CODE</span>
+                  <input autoComplete="one-time-code" inputMode="numeric" maxLength={6} minLength={6} name="otpCode" onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" required value={otpCode} />
+                </label>}
+
+                {mode !== 'reset' && mode !== 'verify' && mode !== 'otp-verify' && <label className="field">
                   <span>EMAIL ADDRESS</span>
                   <input
                     autoComplete="email"
@@ -309,7 +368,7 @@ function App() {
                   />
                 </label>}
 
-                {mode !== 'forgot' && mode !== 'verify' && <label className="field">
+                {mode !== 'forgot' && mode !== 'verify' && mode !== 'otp-request' && mode !== 'otp-verify' && <label className="field">
                   <span>{mode === 'reset' ? 'NEW PASSWORD' : 'PASSWORD'}</span>
                   <span className="password-input">
                     <input
@@ -336,8 +395,11 @@ function App() {
                 {mode === 'reset' && <label className="field"><span>CONFIRM NEW PASSWORD</span><input autoComplete="new-password" maxLength={72} minLength={10} name="confirmPassword" onChange={updateField} placeholder="Enter the new password again" required type="password" value={form.confirmPassword} /></label>}
                 {mode === 'verify' && <p className="forgot-row"><button className="text-button" type="button" disabled={submitting} onClick={async () => { try { const response = await fetch('/api/auth/email/resend', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token }, body: JSON.stringify({ email: pendingEmail }) }); if (!response.ok) throw new Error(await readError(response)); setError('If the account needs verification, a new code will be sent shortly.'); } catch (e) { setError(e.message || 'Could not resend the code.'); } }}>RESEND CODE</button></p>}
                 {mode === 'login' && <p className="forgot-row"><button className="text-button" type="button" onClick={() => { setMode('forgot'); setError('') }}>FORGOT PASSWORD?</button></p>}
+                {mode === 'login' && <p className="forgot-row"><button className="text-button" type="button" onClick={() => changeMode('otp-request')}>SIGN IN WITH AN EMAIL CODE</button></p>}
+                {mode === 'otp-verify' && <p className="forgot-row"><button className="text-button" type="button" disabled={submitting || resendSeconds > 0} onClick={resendEmailOtp}>{resendSeconds > 0 ? `RESEND CODE IN ${resendSeconds}S` : 'RESEND CODE'}</button></p>}
 
                 {error && <p className="form-error" role="alert">{error}</p>}
+                {notice && <p className="form-status" role="status">{notice}</p>}
 
                 {!apiReady && !loading && (
                   <p className="form-note" role="status">
@@ -355,20 +417,20 @@ function App() {
                       ? 'PLEASE WAIT'
                       : mode === 'login'
                         ? 'ENTER THE SYSTEM'
-                        : mode === 'register' ? 'CREATE ACCOUNT' : mode === 'verify' ? 'VERIFY EMAIL' : mode === 'forgot' ? 'SEND RESET LINK' : 'UPDATE PASSWORD'}
+                        : mode === 'register' ? 'CREATE ACCOUNT' : mode === 'verify' ? 'VERIFY EMAIL' : mode === 'otp-request' ? 'SEND SIGN-IN CODE' : mode === 'otp-verify' ? 'VERIFY CODE' : mode === 'forgot' ? 'SEND RESET LINK' : 'UPDATE PASSWORD'}
                   </span>
                   <span aria-hidden="true">↗</span>
                 </button>
               </form>
 
               <p className="panel-footnote">
-                {mode === 'verify' ? 'ALREADY VERIFIED?' : mode === 'forgot' || mode === 'reset' ? 'REMEMBERED YOUR PASSWORD?' : mode === 'login' ? 'NEW HERE?' : 'ALREADY HAVE AN ACCOUNT?'}{' '}
+                {mode === 'verify' ? 'ALREADY VERIFIED?' : mode === 'forgot' || mode === 'reset' || mode === 'otp-request' || mode === 'otp-verify' ? 'RETURN TO PASSWORD SIGN IN?' : mode === 'login' ? 'NEW HERE?' : 'ALREADY HAVE AN ACCOUNT?'}{' '}
                 <button
                   className="text-button"
-                  onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); window.history.replaceState({}, '', '/') }}
+                  onClick={() => { if (mode === 'otp-request' || mode === 'otp-verify') returnToPasswordLogin(); else { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setNotice(''); window.history.replaceState({}, '', '/') } }}
                   type="button"
                 >
-                  {mode === 'login' ? 'CREATE AN ACCOUNT' : 'SIGN IN'}
+                  {mode === 'login' ? 'CREATE AN ACCOUNT' : mode === 'otp-request' || mode === 'otp-verify' ? 'PASSWORD SIGN IN' : 'SIGN IN'}
                 </button>
               </p>
             </>

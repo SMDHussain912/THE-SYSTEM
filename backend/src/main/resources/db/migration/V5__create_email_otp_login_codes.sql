@@ -1,0 +1,9 @@
+CREATE TABLE email_otp_login_codes (
+    id UUID PRIMARY KEY,
+    account_id UUID NOT NULL UNIQUE REFERENCES accounts(id) ON DELETE CASCADE,
+    code_hash VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used_at TIMESTAMP WITH TIME ZONE
+);

@@ -28,8 +28,19 @@ uses session cookies and CSRF tokens for browser requests:
 - `GET /api/auth/csrf` — obtain a CSRF token before a state-changing request
 - `POST /api/auth/register` — create an account and sign in
 - `POST /api/auth/login` — sign in
+- `POST /api/auth/email/otp/request` — request a one-time email sign-in code
+- `POST /api/auth/email/otp/verify` — verify the code and sign in
 - `GET /api/auth/me` — get the signed-in account
 - `POST /api/auth/logout` — end the current session
+
+Email-code sign-in is available to verified accounts. Codes expire after 10
+minutes, can be used once, and allow up to five verification attempts. Requests
+are rate limited to one code per minute and return the same response whether or
+not the email belongs to an eligible account. OTP request processing and email
+delivery are asynchronous so the request response does not wait on account
+lookups or the mail server. Failed code guesses also count toward an account
+limit of 10 attempts per hour; reaching that limit blocks email-code sign-in for
+15 minutes. A successful sign-in clears the account failure counter.
 
 For HTTPS deployments, set `SESSION_COOKIE_SECURE=true` so session and CSRF
 cookies are only sent over secure connections. Flyway applies the SQL schema
