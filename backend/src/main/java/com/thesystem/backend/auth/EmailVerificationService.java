@@ -45,7 +45,7 @@ public class EmailVerificationService {
 		issueCode(account, true);
 	}
 
-	@Transactional
+	@Transactional(noRollbackFor = ResponseStatusException.class)
 	public Account verify(String email, String rawCode) {
 		String normalizedEmail = AccountService.normalizeEmail(email);
 		if (rawCode == null || !rawCode.matches("\\d{6}")) throw invalidCode();
@@ -55,16 +55,15 @@ public class EmailVerificationService {
 				.orElseThrow(this::invalidCode);
 		Instant now = Instant.now();
 		if (!code.isUsableAt(now)) throw invalidCode();
-		if (!MessageDigest.isEqual(hash(rawCode), code.getCodeHash())) {
+		if (!MessageDigest.isEqual(hash(rawCode).getBytes(StandardCharsets.US_ASCII),
+				code.getCodeHash().getBytes(StandardCharsets.US_ASCII))) {
 			code.recordFailedAttempt();
-			return failAfterRecordingAttempt();
+			throw invalidCode();
 		}
 		code.markUsed(now);
 		account.setEmailVerified(true);
 		return account;
 	}
-
-	private Account failAfterRecordingAttempt() { throw invalidCode(); }
 
 	private void issueCode(Account account, boolean enforceCooldown) {
 		Instant now = Instant.now();
