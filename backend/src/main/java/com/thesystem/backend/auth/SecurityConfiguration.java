@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -63,7 +64,9 @@ public class SecurityConfiguration {
 			@Value("${app.frontend.url:http://localhost:5173}") String frontendUrl) throws Exception {
 		http
 			.csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository)
-					.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+					.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+					.requireCsrfProtectionMatcher(CsrfFilter.DEFAULT_CSRF_MATCHER))
+			.addFilterBefore(new CookieCsrfEnforcementFilter(csrfTokenRepository), CsrfFilter.class)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.securityContext(context -> context.requireExplicitSave(true))
 			.authorizeHttpRequests(authorize -> authorize
@@ -73,6 +76,7 @@ public class SecurityConfiguration {
 							"/api/auth/password/forgot", "/api/auth/password/reset",
 							"/oauth2/**", "/login/oauth2/**").permitAll()
 					.requestMatchers("/api/auth/**").authenticated()
+					.requestMatchers("/api/player/**").authenticated()
 					.anyRequest().denyAll())
 			.exceptionHandling(exceptions -> exceptions
 					.authenticationEntryPoint((request, response, exception) ->

@@ -9,16 +9,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.thesystem.backend.account.Account;
 import com.thesystem.backend.account.AccountRepository;
+import com.thesystem.backend.player.PlayerOnboardingService;
 
 @Service
 public class AccountService {
 
 	private final AccountRepository accountRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final PlayerOnboardingService playerOnboardingService;
 
-	public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+	public AccountService(AccountRepository accountRepository, PasswordEncoder passwordEncoder,
+			PlayerOnboardingService playerOnboardingService) {
 		this.accountRepository = accountRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.playerOnboardingService = playerOnboardingService;
 	}
 
 	@Transactional
@@ -36,7 +40,9 @@ public class AccountService {
 				request.displayName().trim(),
 				email,
 				passwordEncoder.encode(request.password()));
-		return accountRepository.save(account);
+		Account created = accountRepository.save(account);
+		playerOnboardingService.initializeForNewAccount(created);
+		return created;
 	}
 
 	@Transactional
@@ -61,7 +67,9 @@ public class AccountService {
 				null);
 		created.linkGoogle(subject);
 		created.setEmailVerified(true);
-		return accountRepository.save(created);
+		Account saved = accountRepository.save(created);
+		playerOnboardingService.initializeForNewAccount(saved);
+		return saved;
 	}
 
 	public static String normalizeEmail(String email) {

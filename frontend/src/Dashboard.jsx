@@ -3,9 +3,11 @@ import './Dashboard.css'
 
 const navigation = ['Home', 'Activity', 'Tasks', 'Progress', 'About You']
 
-function Dashboard({ account, onLogout, submitting }) {
+function Dashboard({ account, onboarding, onLogout, submitting, onReplayAwakening, error }) {
   const [activePage, setActivePage] = useState('Home')
   const displayName = account?.displayName?.trim()
+  const onboardingStatus = onboarding?.status
+  const canReplay = onboardingStatus === 'COMPLETED' || onboardingStatus === 'SKIPPED'
 
   return (
     <>
@@ -33,9 +35,23 @@ function Dashboard({ account, onLogout, submitting }) {
       </header>
 
       <main className="system-workspace">
+        {error && <p className="system-error" role="alert">{error}</p>}
         <section className="system-home" aria-live="polite">
           {activePage === 'Home' ? (
-            <h1>{'Welcome back' + (displayName ? ', ' + displayName : '') + '.'}</h1>
+            <div className="system-welcome">
+              <p className="kicker"><span /> {canReplay ? 'PLAYER STATUS' : 'SYSTEM HOME'}</p>
+              <h1>{'Welcome back' + (displayName ? ', ' + displayName : '') + '.'}</h1>
+              {onboarding && (
+                <div className="system-status-card">
+                  <span>Awakening state: {onboardingStatus || 'ACTIVE'}</span>
+                  {canReplay && (
+                    <button className="text-button" type="button" onClick={onReplayAwakening} disabled={submitting}>
+                      Replay awakening
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <h1>{activePage}</h1>
