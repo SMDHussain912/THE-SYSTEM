@@ -16,6 +16,11 @@ public final class AuthRequests {
 			@NotBlank @Email @Size(max = 254) String email,
 			@NotBlank @Size(max = 72) String password) {}
 
+	public record EmailVerification(@NotBlank @Email @Size(max = 254) String email,
+			@NotBlank @Size(min = 6, max = 6) String code) {}
+
+	public record EmailVerificationResend(@NotBlank @Email @Size(max = 254) String email) {}
+
 	public record PasswordResetRequest(
 			@NotBlank @Email @Size(max = 254) String email) {}
 
