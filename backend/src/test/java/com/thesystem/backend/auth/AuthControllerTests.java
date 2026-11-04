@@ -88,7 +88,7 @@ class AuthControllerTests {
 								""".formatted(EMAIL, code)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.email").value(EMAIL))
-				.andExpect(result -> assertTrue(result.getResponse().getCookie("THE_SYSTEM_ACCESS") != null));
+				.andExpect(result -> assertTrue(result.getResponse().getCookie("SYSTEM_ACCESS") != null));
 
 		assertTrue(accountRepository.findByEmail(EMAIL).orElseThrow().isEmailVerified());
 	}
