@@ -51,6 +51,7 @@ public class AccountService {
 				throw new IllegalArgumentException("This email is already linked to another Google account.");
 			}
 			account.linkGoogle(subject);
+			account.setEmailVerified(true);
 			return accountRepository.save(account);
 		}
 
@@ -59,6 +60,7 @@ public class AccountService {
 				normalizedEmail,
 				null);
 		created.linkGoogle(subject);
+		created.setEmailVerified(true);
 		return accountRepository.save(created);
 	}
 

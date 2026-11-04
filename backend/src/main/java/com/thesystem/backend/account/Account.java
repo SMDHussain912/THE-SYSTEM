@@ -31,6 +31,8 @@ public class Account {
 	private String totpSecret;
 	@Column(name = "totp_enabled", nullable = false)
 	private boolean totpEnabled;
+	@Column(name = "email_verified", nullable = false)
+	private boolean emailVerified;
 
 	protected Account() {}
 
@@ -39,6 +41,7 @@ public class Account {
 		this.email = email;
 		this.passwordHash = passwordHash;
 		this.totpEnabled = false;
+		this.emailVerified = false;
 	}
 
 	public UUID getId() { return id; }
@@ -48,7 +51,9 @@ public class Account {
 	public String getGoogleSubject() { return googleSubject; }
 	public String getTotpSecret() { return totpSecret; }
 	public boolean isTotpEnabled() { return totpEnabled; }
+	public boolean isEmailVerified() { return emailVerified; }
 	public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+	public void setEmailVerified(boolean verified) { this.emailVerified = verified; }
 	public void linkGoogle(String subject) { this.googleSubject = subject; }
 	public void setTotpSecret(String secret) { this.totpSecret = secret; }
 	public void setTotpEnabled(boolean enabled) { this.totpEnabled = enabled; }

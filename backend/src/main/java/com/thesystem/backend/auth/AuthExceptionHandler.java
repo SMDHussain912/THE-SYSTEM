@@ -7,11 +7,18 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.thesystem.backend.auth.AuthResponses.ApiError;
 
 @RestControllerAdvice
 public class AuthExceptionHandler {
+
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<ApiError> handleStatusException(ResponseStatusException exception) {
+		return ResponseEntity.status(exception.getStatusCode())
+				.body(new ApiError(exception.getReason() == null ? "The request could not be completed." : exception.getReason()));
+	}
 
 	@ExceptionHandler(EmailAlreadyRegisteredException.class)
 	public ResponseEntity<ApiError> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException exception) {

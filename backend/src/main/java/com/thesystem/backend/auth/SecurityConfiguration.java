@@ -67,7 +67,7 @@ public class SecurityConfiguration {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.securityContext(context -> context.requireExplicitSave(true))
 			.authorizeHttpRequests(authorize -> authorize
-					.requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/register", "/api/auth/login",
+					.requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/register", "/api/auth/login", "/api/auth/email/verify", "/api/auth/email/resend",
 							"/api/auth/password/forgot", "/api/auth/password/reset",
 							"/oauth2/**", "/login/oauth2/**").permitAll()
 					.requestMatchers("/api/auth/**").authenticated()

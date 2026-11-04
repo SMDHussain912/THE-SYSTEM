@@ -35,11 +35,13 @@ public class AuthController {
 	private final CsrfTokenRepository csrfTokenRepository;
 	private final JwtService jwtService;
 	private final PasswordResetService passwordResetService;
+	private final EmailVerificationService emailVerificationService;
 	private final boolean secureCookies;
 
 	public AuthController(AccountService accountService, AccountRepository accountRepository,
 			AuthenticationManager authenticationManager, CsrfTokenRepository csrfTokenRepository,
 			JwtService jwtService, PasswordResetService passwordResetService,
+			EmailVerificationService emailVerificationService,
 			@Value("${app.security.cookie-secure:false}") boolean secureCookies) {
 		this.accountService = accountService;
 		this.accountRepository = accountRepository;
@@ -47,6 +49,7 @@ public class AuthController {
 		this.csrfTokenRepository = csrfTokenRepository;
 		this.jwtService = jwtService;
 		this.passwordResetService = passwordResetService;
+		this.emailVerificationService = emailVerificationService;
 		this.secureCookies = secureCookies;
 	}
 
@@ -56,19 +59,36 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity<AccountProfile> register(@Valid @RequestBody AuthRequests.Register request,
-			HttpServletResponse response) {
+	public ResponseEntity<AuthResponses.MessageResponse> register(@Valid @RequestBody AuthRequests.Register request) {
 		Account account = accountService.register(request);
-		authenticateAndIssueCookie(account.getEmail(), request.password(), response);
-		return ResponseEntity.status(HttpStatus.CREATED).body(AccountProfile.from(account));
+		emailVerificationService.sendRegistrationCode(account);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new AuthResponses.MessageResponse(
+				"A verification code has been sent to your email address."));
+	}
+
+	@PostMapping("/email/verify")
+	public AccountProfile verifyEmail(@Valid @RequestBody AuthRequests.EmailVerification request,
+			HttpServletResponse response) {
+		Account account = emailVerificationService.verify(request.email(), request.code());
+		authenticateAndIssueCookie(account.getEmail(), null, response);
+		return AccountProfile.from(account);
+	}
+
+	@PostMapping("/email/resend")
+	public ResponseEntity<AuthResponses.MessageResponse> resendVerification(
+			@Valid @RequestBody AuthRequests.EmailVerificationResend request) {
+		emailVerificationService.resendCode(request.email());
+		return ResponseEntity.ok(new AuthResponses.MessageResponse(
+				"If the account needs verification, a new code will be sent shortly."));
 	}
 
 	@PostMapping("/login")
 	public AccountProfile login(@Valid @RequestBody AuthRequests.Login request, HttpServletResponse response) {
 		String email = AccountService.normalizeEmail(request.email());
 		authenticateAndIssueCookie(email, request.password(), response);
-		return accountRepository.findByEmail(email).map(AccountProfile::from)
+		Account signedIn = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
+		return AccountProfile.from(signedIn);
 	}
 
 	@PostMapping("/password/forgot")
@@ -105,9 +125,15 @@ public class AuthController {
 	}
 
 	private void authenticateAndIssueCookie(String email, String password, HttpServletResponse response) {
-		authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(email, password));
+		if (password != null) {
+			authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(email, password));
+		}
 		Account account = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
+		if (password != null && !account.isEmailVerified()) {
+			throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN,
+					"Please verify your email address before signing in.");
+		}
 		Cookie cookie = new Cookie(JwtService.ACCESS_COOKIE, jwtService.createAccessToken(account));
 		cookie.setHttpOnly(true);
 		cookie.setSecure(secureCookies);
