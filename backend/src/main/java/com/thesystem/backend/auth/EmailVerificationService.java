@@ -35,7 +35,10 @@ public class EmailVerificationService {
 
 	@Transactional
 	public void sendRegistrationCode(Account account) {
-		if (!account.isEmailVerified()) issueCode(account, false);
+		if (!account.isEmailVerified()) {
+			Account managedAccount = accounts.findById(account.getId()).orElseThrow();
+			issueCode(managedAccount, false);
+		}
 	}
 
 	@Transactional
