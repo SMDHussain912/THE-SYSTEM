@@ -292,7 +292,7 @@ function App() {
 
                 {mode === 'verify' && <label className="field">
                   <span>6-DIGIT VERIFICATION CODE</span>
-                  <input autoComplete="one-time-code" inputMode="numeric" maxLength={6} minLength={6} name="verificationCode" onChange={(event) => setVerificationCode(event.target.value.replace(/\\D/g, '').slice(0, 6))} placeholder="000000" required value={verificationCode} />
+                  <input autoComplete="one-time-code" inputMode="numeric" maxLength={6} minLength={6} name="verificationCode" onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" required value={verificationCode} />
                 </label>}
 
                 {mode !== 'reset' && mode !== 'verify' && <label className="field">
@@ -365,7 +365,7 @@ function App() {
                 {mode === 'verify' ? 'ALREADY VERIFIED?' : mode === 'forgot' || mode === 'reset' ? 'REMEMBERED YOUR PASSWORD?' : mode === 'login' ? 'NEW HERE?' : 'ALREADY HAVE AN ACCOUNT?'}{' '}
                 <button
                   className="text-button"
-                  onClick={() => { setMode(mode === 'login' || mode === 'verify' ? 'register' : 'login'); setError(''); window.history.replaceState({}, '', '/') }}
+                  onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); window.history.replaceState({}, '', '/') }}
                   type="button"
                 >
                   {mode === 'login' ? 'CREATE AN ACCOUNT' : 'SIGN IN'}
