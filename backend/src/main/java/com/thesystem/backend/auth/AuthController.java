@@ -88,12 +88,7 @@ public class AuthController {
 		authenticateAndIssueCookie(email, request.password(), response);
 		Account signedIn = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
-		if (!signedIn.isEmailVerified()) {
-			throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN,
-					"Please verify your email address before signing in.");
-		}
-		return accountRepository.findByEmail(email).map(AccountProfile::from)
-				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
+		return AccountProfile.from(signedIn);
 	}
 
 	@PostMapping("/password/forgot")
@@ -135,6 +130,10 @@ public class AuthController {
 		}
 		Account account = accountRepository.findByEmail(email)
 				.orElseThrow(() -> new IllegalStateException("Authenticated account no longer exists."));
+		if (password != null && !account.isEmailVerified()) {
+			throw new org.springframework.web.server.ResponseStatusException(HttpStatus.FORBIDDEN,
+					"Please verify your email address before signing in.");
+		}
 		Cookie cookie = new Cookie(JwtService.ACCESS_COOKIE, jwtService.createAccessToken(account));
 		cookie.setHttpOnly(true);
 		cookie.setSecure(secureCookies);
